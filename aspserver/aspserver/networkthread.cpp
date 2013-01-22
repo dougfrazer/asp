@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <sys/poll.h>
 #include <netinet/in.h>
 #include <unistd.h>
 
@@ -66,7 +67,7 @@ void NetworkThread::Start()
     
     while(true) {
         // handle keeplive
-        //printf("Updating thread=%lu\n", (unsigned long)pthread_self());
+        printf("Updating thread=%lu\n", (unsigned long)pthread_self());
         UpdateTimers();
         
         // see if we have a packet to be recieved
@@ -74,47 +75,64 @@ void NetworkThread::Start()
         if(rc == ASP_ESLEEP || errno == EWOULDBLOCK) {
             sleep(SLEEP_TIMER);
             continue;
-        } else if(rc != EOK && rc != ASP_EMORE) {
-            printf("[%s:%d] Error %d (%s)", __FILE__, __LINE__, errno, strerror(errno));
-            Terminated = true;
-            break;
-        }
-        
-        // parse the recieved packet
-        while(len > 0) {
-            assert(Packet->Header.Length > 0);
+        } else if(Packet->Header.Type != NONE) {
             rc = ParsePacket(Packet, len);
             if(rc != EOK) {
                 printf("[%lu] Error parsing packet error %d (%s)", (unsigned long)pthread_self(), errno, strerror(errno));
                 Terminated = true;
                 break;
             }
-            Packet += Packet->Header.Length;
-            len -= Packet->Header.Length; 
-        } 
+        } else {
+            printf("[%s:%d] Error %d (V%s)", __FILE__, __LINE__, errno, strerror(errno));
+            Terminated = true;
+            break;
+        }
     }
 }
 // *******************************************************************************
 cerrno NetworkThread::RecievePacket(ASP_PACKET** OutPacket, long* outlen)
 {
     zero(buffer);
-    long len = read(Data.sockfd, (void *)buffer, sizeof(buffer));
+    long len;
+
+    struct pollfd fds;
+    fds.fd = Data.sockfd;
+    fds.events = POLLIN;
+    if(poll(&fds, 1, 0) == 0) {
+        // no data avaiable
+        return ASP_ESLEEP;
+    }
     
+    // read the header
+    len = read(Data.sockfd, (void *)buffer, sizeof(ASP_HEADER));
     if(len == -1) {
         return ENOTCONN;
     } else if(len == 0) {
         return ASP_ESLEEP;
     }
+
+    // read the data if this packet contains any
+    printf("[%lu] Recieved a packet of type %d length=%d\n", 
+            (unsigned long)pthread_self(), 
+            ((ASP_HEADER*)buffer)->Type,
+            ((ASP_HEADER*)buffer)->Length); 
+    len = read(Data.sockfd, (void*)&(((ASP_PACKET*)buffer)->Body), ((ASP_PACKET*)buffer)->Header.Length);
+    if(len == -1) {
+        return ENOTCONN;
+    }
     
     *OutPacket = (ASP_PACKET*)buffer;
     *outlen = len;
-    return len == sizeof(buffer) ? ASP_EMORE : EOK;
+    return ASP_EMORE;
 }
 // *******************************************************************************
 cerrno NetworkThread::ParsePacket(ASP_PACKET* Packet, long len)
 {
     ASP_DIRECTION_PACKET* DirectionPacket;
-    assert(len >= Packet->Header.Length);
+    if(len < Packet->Header.Length) {
+        printf("Length read: %d   Length Expected %d\n", (int)len, (int)Packet->Header.Length);
+        exit(EXIT_FAILURE);
+    }
     switch(Packet->Header.Type)
     {
     case CLOSE_CONNECTION:
@@ -138,7 +156,7 @@ cerrno NetworkThread::ParsePacket(ASP_PACKET* Packet, long len)
         break;
             
     default:
-        printf("[%lu] Got a packet of type %d (%ld bytes)\n", (unsigned long)pthread_self, Packet->Header.Type, len);
+        printf("[%lu] Got a packet of type %d (%ld bytes)\n", (unsigned long)pthread_self(), Packet->Header.Type, len);
         break;
     }
     return EOK;
@@ -164,10 +182,19 @@ void NetworkThread::UpdateTimers()
 // *******************************************************************************
 void NetworkThread::SendKeepalive()
 {
+    struct pollfd fds;
+    fds.fd = Data.sockfd;
+    fds.events = POLLOUT;
+    if(poll(&fds, 1, 10) == 0) {
+        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+        return;
+    }
+
+    printf("[%lu] Sending a keepalive\n", (unsigned long)pthread_self());
     ASP_PACKET Packet;
     Packet.Header.Type = KEEPALIVE;
     Packet.Header.Length = sizeof(ASP_PACKET);
-    send(Data.sockfd, (void*)&Packet, sizeof(Packet), 0);
+    write(Data.sockfd, (void*)&Packet, sizeof(Packet));
 }
 // *******************************************************************************
 bool NetworkThread::IsDone()

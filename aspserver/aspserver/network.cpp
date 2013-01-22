@@ -47,17 +47,15 @@ void Network_Init()
     Server.sin_addr.s_addr = INADDR_ANY;
     
     // establish the socket
-    NetworkData.sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if( fcntl(NetworkData.sockfd, F_SETFL, O_NONBLOCK) < 0 ) {
-        printf("error setting non-blocking flag %d (%s)\n", errno, strerror(errno));
+    NetworkData.sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+    if(errno != EOK || NetworkData.sockfd <= 0) {
         exit(EXIT_FAILURE);
     }
     
-    assert(NetworkData.sockfd > 0 && errno == EOK);
-    
     // bind the socket
-    rc = bind(NetworkData.sockfd, (struct sockaddr*)&Server, sizeof(Server));
-    assert(rc >= 0 && errno == EOK);
+    if(bind(NetworkData.sockfd, (struct sockaddr*)&Server, sizeof(Server)) != EOK) {
+        exit(EXIT_FAILURE);
+    }
     
     // listen for incoming messages, up to 1 pending connection
     listen(NetworkData.sockfd, 1);
@@ -79,10 +77,9 @@ void Network_Update(float DeltaTime)
     
     // listen for new connections
     int ConnectedSocket = accept(NetworkData.sockfd, (struct sockaddr*)&Client, &socksize);
-    if(errno == EWOULDBLOCK) return;
     if(ConnectedSocket < 0) {
-        printf("[%s:%d] Error %d (%s)\n", __FILE__, __LINE__, errno, strerror(errno));
-        exit(EXIT_FAILURE);
+        printf("No connection this frame...\n");
+        return;
     }
     
     printf("Incoming connection from %s\n", inet_ntoa(Client.sin_addr));

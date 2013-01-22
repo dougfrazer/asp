@@ -7,6 +7,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -33,7 +35,7 @@ int main()
     Main_Init();
     
     while(true) {
-        //printf("Running main update on thread=%u\n", pthread_self());
+        printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
         clock_t CurrentClock = clock();
         float DeltaTime = ((float)CurrentClock - (float)PreviousClock)/CLOCKS_PER_SEC;
         PreviousClock = CurrentClock;
