@@ -44,10 +44,11 @@ static void Network_SendKeepaliveResponse()
 // *****************************************************************************
 static void Network_ProcessPacket(ASP_PACKET* Packet, long len)
 {
+    printf("Recieved a packet of type %d (%ld bytes)\n", Packet->Header.Type, len);
     switch(Packet->Header.Type)
     {
     case KEEPALIVE: Network_SendKeepaliveResponse(); break;
-    default: printf("Recieved a packet of type %d (%ld bytes)\n", Packet->Header.Type, len);
+    default:        break; 
     }
 }
 // *****************************************************************************
@@ -63,7 +64,7 @@ void Network_Init()
     
     zero(&NetworkData.Destination);
     NetworkData.Destination.sin_family = AF_INET;
-    NetworkData.Destination.sin_addr.s_addr = inet_addr("127.0.0.1");
+    NetworkData.Destination.sin_addr.s_addr = inet_addr("76.102.182.9");
     NetworkData.Destination.sin_port = htons(PORTNUM);
     
     connect(NetworkData.sockfd, (struct sockaddr*)&NetworkData.Destination, sizeof(NetworkData.Destination));
@@ -84,9 +85,12 @@ static void Network_Read(char* buffer, int size, ssize_t* outlen)
         return;
     }
 
-    do {
-        *outlen = read(NetworkData.sockfd, (void*)buffer, size);
-    } while(*outlen != -1);
+    *outlen = read(NetworkData.sockfd, (void*)buffer, sizeof(ASP_HEADER));
+    if(*outlen > 0) {
+        assert(*outlen == sizeof(ASP_HEADER));
+        *outlen += read(NetworkData.sockfd, (void*)(buffer + sizeof(ASP_HEADER)), ((ASP_HEADER*)buffer)->Length);
+        assert(*outlen == ((ASP_HEADER*)buffer)->Length + (uint32_t)sizeof(ASP_HEADER));
+    }
 
     if(errno == EAGAIN) {
         return;

@@ -40,6 +40,12 @@ NetworkThread::NetworkThread(int sockfd, struct sockaddr_in Address)
     
     Data.sockfd = sockfd;
     Data.address = Address;
+    
+    Timers.Keepalive = KEEPALIVE_TIMER;
+    Timers.KeepaliveTimeout = KEEPALIVE_TIMEOUT;
+    Timers.PreviousTime = time(NULL);
+
+    Terminated = false;
 
     rc = pthread_create(&Thread, NULL, NetworkThread_StartFunction, (void*)this);
     assert(rc == EOK);
@@ -193,7 +199,7 @@ void NetworkThread::SendKeepalive()
     printf("[%lu] Sending a keepalive\n", (unsigned long)pthread_self());
     ASP_PACKET Packet;
     Packet.Header.Type = KEEPALIVE;
-    Packet.Header.Length = sizeof(ASP_PACKET);
+    Packet.Header.Length = 0;
     write(Data.sockfd, (void*)&Packet, sizeof(Packet));
 }
 // *******************************************************************************

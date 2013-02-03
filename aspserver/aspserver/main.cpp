@@ -35,14 +35,14 @@ int main()
     Main_Init();
     
     while(true) {
-        printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
+//        printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
         clock_t CurrentClock = clock();
         float DeltaTime = ((float)CurrentClock - (float)PreviousClock)/CLOCKS_PER_SEC;
         PreviousClock = CurrentClock;
         
         Main_Update(DeltaTime);
-        
-        sleep(MIN_FRAME_TIME);
+//        
+//        sleep(MIN_FRAME_TIME);
     }
     
     Main_Deinit();

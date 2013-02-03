@@ -22,7 +22,8 @@ enum ASP_PACKET_TYPE
 struct ASP_HEADER
 {
     uint32_t     Type   : 8;
-    uint32_t     Length : 24;
+    uint32_t     Length : 8;
+    uint32_t     Unused : 16;
 };
 
 struct ASP_ACK_PACKET

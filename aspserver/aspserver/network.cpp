@@ -37,6 +37,7 @@ static struct {
 //*******************************************************************************
 void Network_Init()
 {
+    printf("Initializing Network...\n");
     cerrno rc = EOK;
     NetworkData.sockfd = -1;
     struct sockaddr_in Server;
@@ -58,6 +59,7 @@ void Network_Init()
     }
     
     // listen for incoming messages, up to 1 pending connection
+    printf("Listening for new connections\n");
     listen(NetworkData.sockfd, 1);
 }
 //*******************************************************************************
@@ -67,18 +69,19 @@ void Network_Update(float DeltaTime)
     socklen_t socksize = sizeof(struct sockaddr_in);
     
     // update existing connections
-    for (std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it!=NetworkData.Threads.end(); ++it) {
+    for (std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it!=NetworkData.Threads.end(); it++) {
         NetworkThread* thread = *it;
         if(thread->IsDone()) {
-            delete(thread);
             NetworkData.Threads.remove(thread);
+            delete(thread);
+            it = NetworkData.Threads.begin(); // restart from beginning of list to avoid a crash (TODO: fix this)
         }
     }
     
     // listen for new connections
     int ConnectedSocket = accept(NetworkData.sockfd, (struct sockaddr*)&Client, &socksize);
     if(ConnectedSocket < 0) {
-        printf("No connection this frame...\n");
+//        printf("No connection this frame...\n");
         return;
     }
     
