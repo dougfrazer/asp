@@ -21,16 +21,20 @@
 #include "common_include.h"
 #include "asppacket.h"
 #include "keyboard.h"
+#include "world.h"
 
+// TODO: get rid of static memory
 static struct {
     int sockfd;
     struct sockaddr_in Destination;
+    uint32_t LoginId;
+    bool LoginConfirmed;
 } NetworkData;
 
-static void Network_SendBack()    { Network_SendDirectionPacket(1, 5); }
-static void Network_SendForward() { Network_SendDirectionPacket(2, 5); }
-static void Network_SendLeft()    { Network_SendDirectionPacket(3, 5); }
-static void Network_SendRight()   { Network_SendDirectionPacket(4, 5); } 
+static void Network_SendBack()    { Network_SendDirectionPacket(SOUTH, 1); }
+static void Network_SendForward() { Network_SendDirectionPacket(NORTH, 1); }
+static void Network_SendLeft()    { Network_SendDirectionPacket(WEST,  1); }
+static void Network_SendRight()   { Network_SendDirectionPacket(EAST,  1); } 
 // *****************************************************************************
 static void Network_SendKeepaliveResponse()
 {
@@ -42,20 +46,50 @@ static void Network_SendKeepaliveResponse()
     assert(size > 0);
 }
 // *****************************************************************************
+static void Network_SendLoginRequest(uint32_t UserId)
+{
+    char Buffer[1024];
+    ASP_PACKET* Packet = (ASP_PACKET*)Buffer;
+    Packet->Header.Type = LOGIN;
+    Packet->Header.Length = sizeof(ASP_LOGIN_PACKET);
+
+    ASP_LOGIN_PACKET* LoginPacket = (ASP_LOGIN_PACKET*)&Packet->Body;
+    LoginPacket->UserId = UserId;
+
+    ssize_t size = write(NetworkData.sockfd, (void*)&Buffer, sizeof(ASP_HEADER) + sizeof(ASP_LOGIN_PACKET));
+    assert(size > 0);
+}
+// *****************************************************************************
 static void Network_ProcessPacket(ASP_PACKET* Packet, long len)
 {
     printf("Recieved a packet of type %d (%ld bytes)\n", Packet->Header.Type, len);
     switch(Packet->Header.Type)
     {
-    case KEEPALIVE: Network_SendKeepaliveResponse(); break;
-    default:        break; 
+    case DIRECTION_ACK:
+        {
+            ASP_DIRECTION_ACK_PACKET* DirectionPacket = (ASP_DIRECTION_ACK_PACKET*)&Packet->Body;
+            World_SetPosition( DirectionPacket->x, DirectionPacket->y, DirectionPacket->UserId );
+        } break;
+    case LOGIN_ACK:
+        {
+            ASP_LOGIN_ACK_PACKET* LoginPacket = (ASP_LOGIN_ACK_PACKET*)&Packet->Body;
+            if(LoginPacket->Successful) {
+                printf("Login successful as userid=%d position=(%d,%d)\n", LoginPacket->UserId, LoginPacket->x, LoginPacket->y);
+                NetworkData.LoginId = LoginPacket->UserId;
+                NetworkData.LoginConfirmed = true;
+                World_SetPosition(LoginPacket->x, LoginPacket->y, LoginPacket->UserId);
+            } else {
+                printf("Login unnsuccessful, (error %d) trying with a userid=%d\n", LoginPacket->Error, LoginPacket->UserId+1);
+                Network_SendLoginRequest( LoginPacket->UserId++ );
+            }
+        } break;
+    case KEEPALIVE:
+        {
+            Network_SendKeepaliveResponse();
+        } break;
+    default:            break; 
     }
 }
-// *****************************************************************************
-//static void Network_SendTestPacket()
-//{
-//   Network_SendDirectionPacket(10, 20);
-//}
 // *****************************************************************************
 void Network_Init()
 {
@@ -102,6 +136,11 @@ static void Network_Read(char* buffer, int size, ssize_t* outlen)
 // *****************************************************************************
 void Network_Update(float DeltaTime)
 {
+    if(NetworkData.LoginId == 0) {
+        Network_SendLoginRequest(1);
+        NetworkData.LoginId = 1;
+        NetworkData.LoginConfirmed = false;
+    }
     char buffer[MAX_RECV_LEN];
     ssize_t len = 0;
     //Network_SendTestPacket();
@@ -115,7 +154,7 @@ void Network_Deinit()
     shutdown(NetworkData.sockfd, 2);
 }
 // *****************************************************************************
-void Network_SendDirectionPacket(int direction, int magnitude)
+void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude)
 {
     struct pollfd fds;
     fds.fd = NetworkData.sockfd;
@@ -130,7 +169,7 @@ void Network_SendDirectionPacket(int direction, int magnitude)
     ASP_DIRECTION_PACKET DirectionalPacket;
     Packet.Header.Type = DIRECTION;
     Packet.Header.Length = sizeof(ASP_DIRECTION_PACKET);
-    DirectionalPacket.Direction = direction;
+    DirectionalPacket.Direction = (int)direction;
     DirectionalPacket.Magnitude = magnitude;
     memcpy(&Packet.Body, &DirectionalPacket, sizeof(DirectionalPacket));
     memcpy(buffer, &Packet, sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_PACKET));

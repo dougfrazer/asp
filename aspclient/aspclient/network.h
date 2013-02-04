@@ -6,6 +6,8 @@
 //  Copyright 2013 Douglas Frazer. All rights reserved.
 //
 
+#include "common_include.h"
+
 #ifndef aspclient_network_h
 #define aspclient_network_h
 
@@ -13,6 +15,6 @@ void Network_Init();
 void Network_Update(float DeltaTime);
 void Network_Deinit();
 
-void Network_SendDirectionPacket(int direction, int magnitude);
+void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude);
 
 #endif

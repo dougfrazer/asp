@@ -23,6 +23,7 @@
 #include "network.h"
 #include "networkthread.h"
 #include "asppacket.h"
+#include "world.h"
 
 
 // *******************************************************************************
@@ -46,6 +47,8 @@ NetworkThread::NetworkThread(int sockfd, struct sockaddr_in Address)
     Timers.PreviousTime = time(NULL);
 
     Terminated = false;
+
+    UserId = 0;
 
     rc = pthread_create(&Thread, NULL, NetworkThread_StartFunction, (void*)this);
     assert(rc == EOK);
@@ -73,7 +76,7 @@ void NetworkThread::Start()
     
     while(true) {
         // handle keeplive
-        printf("Updating thread=%lu\n", (unsigned long)pthread_self());
+       // printf("Updating thread=%lu\n", (unsigned long)pthread_self());
         UpdateTimers();
         
         // see if we have a packet to be recieved
@@ -134,35 +137,60 @@ cerrno NetworkThread::RecievePacket(ASP_PACKET** OutPacket, long* outlen)
 // *******************************************************************************
 cerrno NetworkThread::ParsePacket(ASP_PACKET* Packet, long len)
 {
-    ASP_DIRECTION_PACKET* DirectionPacket;
     if(len < Packet->Header.Length) {
         printf("Length read: %d   Length Expected %d\n", (int)len, (int)Packet->Header.Length);
         exit(EXIT_FAILURE);
     }
     switch(Packet->Header.Type)
     {
+    case LOGIN:
+        {
+            ASP_LOGIN_PACKET* LoginPacket = (ASP_LOGIN_PACKET*)&Packet->Body;
+            printf("[%lu] Got a LOGIN packet (%ld bytes): userId=%d\n", 
+                    (unsigned long)pthread_self(), 
+                    len,
+                    LoginPacket->UserId);
+            // TODO: this needs to check whether the user is logged in, once we
+            //       have a proper user module...
+            UserId = LoginPacket->UserId;
+            SendLoginAck(true, 0);
+        } break;
+
     case CLOSE_CONNECTION:
-        printf("[%lu] Got a CLOSE_CONNECTION packet (%ld bytes)\n", (unsigned long)pthread_self(), len);
-        return ENOTCONN;
+        {
+            printf("[%lu] Got a CLOSE_CONNECTION packet (%ld bytes)\n",
+                    (unsigned long)pthread_self(),
+                    len);
+        } return ENOTCONN;
             
     case DIRECTION:
-        DirectionPacket = (ASP_DIRECTION_PACKET*)&Packet->Body;
-        printf("[%lu] Got a directional packet (%ld bytes): %d %d %d %d\n", 
-                (unsigned long)pthread_self(),
-                len,
-                Packet->Header.Type, 
-                Packet->Header.Length,
-                DirectionPacket->Direction,
-                DirectionPacket->Magnitude);
-        break;
+        {
+            ASP_DIRECTION_PACKET* DirectionPacket = (ASP_DIRECTION_PACKET*)&Packet->Body;
+            printf("[%lu] Got a directional packet (%ld bytes): %d %d userid=%d\n", 
+                    (unsigned long)pthread_self(),
+                    len,
+                    DirectionPacket->Direction,
+                    DirectionPacket->Magnitude,
+                    UserId);
+            assert(UserId != 0);
+            SendDirectionAck((ASP_DIRECTION)DirectionPacket->Direction, DirectionPacket->Magnitude);
+        } break;
             
     case KEEPALIVE:
-        printf("[%lu] Got a keepalive packet (%ld bytes)\n", (unsigned long)pthread_self(), len);
-        Timers.KeepaliveTimeout = KEEPALIVE_TIMEOUT;
-        break;
+        {
+            printf("[%lu] Got a keepalive packet (%ld bytes)\n",
+                    (unsigned long)pthread_self(),
+                    len);
+            Timers.KeepaliveTimeout = KEEPALIVE_TIMEOUT;
+        } break;
             
     default:
-        printf("[%lu] Got a packet of type %d (%ld bytes)\n", (unsigned long)pthread_self(), Packet->Header.Type, len);
+        {
+            printf("[%lu] Got a packet of type %d (%ld bytes)\n",
+                    (unsigned long)pthread_self(),
+                    Packet->Header.Type,
+                    len);
+        }
         break;
     }
     return EOK;
@@ -201,6 +229,50 @@ void NetworkThread::SendKeepalive()
     Packet.Header.Type = KEEPALIVE;
     Packet.Header.Length = 0;
     write(Data.sockfd, (void*)&Packet, sizeof(Packet));
+}
+// *******************************************************************************
+void NetworkThread::SendLoginAck(bool Success, uint32_t Error)
+{
+    struct pollfd fds;
+    fds.fd = Data.sockfd;
+    fds.events = POLLOUT;
+    if(poll(&fds, 1, 10) == 0) {
+        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+        return;
+    }
+
+    ASP_PACKET* Packet = (ASP_PACKET*)buffer;
+    Packet->Header.Type = LOGIN_ACK;
+    Packet->Header.Length = sizeof(ASP_LOGIN_ACK_PACKET);
+
+    ASP_LOGIN_ACK_PACKET* LoginAck = (ASP_LOGIN_ACK_PACKET*)&Packet->Body;
+    World_SetInitialPosition(UserId, &LoginAck->x, &LoginAck->y);
+    LoginAck->Successful = Success && UserId != 0;
+    LoginAck->Error = Error;
+    LoginAck->UserId = UserId;
+    printf("[%lu] Sending a LOGIN ACK userId=%d position=(%d,%d)\n", (unsigned long)pthread_self(), UserId, LoginAck->x, LoginAck->y);
+    write(Data.sockfd, (void*)buffer, sizeof(ASP_HEADER) + sizeof(ASP_LOGIN_ACK_PACKET));
+}
+// *******************************************************************************
+void NetworkThread::SendDirectionAck(ASP_DIRECTION Direction, uint32_t Magnitude)
+{
+    struct pollfd fds;
+    fds.fd = Data.sockfd;
+    fds.events = POLLOUT;
+    if(poll(&fds, 1, 10) == 0) {
+        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+        return;
+    }
+
+    ASP_PACKET* Packet = (ASP_PACKET*)buffer;
+    Packet->Header.Type = DIRECTION_ACK;
+    Packet->Header.Length = sizeof(ASP_DIRECTION_ACK_PACKET);
+
+    ASP_DIRECTION_ACK_PACKET* DirectionAck = (ASP_DIRECTION_ACK_PACKET*)&Packet->Body;
+    World_SetPosition(Direction, Magnitude, UserId, &DirectionAck->x, &DirectionAck->y);
+    DirectionAck->UserId = UserId;
+    printf("[%lu] Sending a DIRECTION ACK (%d,%d) userId=%d\n", (unsigned long)pthread_self(), DirectionAck->x, DirectionAck->y, UserId);
+    write(Data.sockfd, (void*)buffer, sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_ACK_PACKET));
 }
 // *******************************************************************************
 bool NetworkThread::IsDone()

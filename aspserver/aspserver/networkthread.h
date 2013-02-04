@@ -27,8 +27,11 @@ private:
     // functions
     cerrno RecievePacket(ASP_PACKET** Packet, long* len);
     cerrno ParsePacket(ASP_PACKET* Packet, long len);
-    void   SendKeepalive();
     void   UpdateTimers();
+
+    void   SendKeepalive();
+    void   SendLoginAck(bool Success, uint32_t Error);
+    void   SendDirectionAck(ASP_DIRECTION Direction, uint32_t Magnitude);
     
     // data
     struct {
@@ -46,7 +49,7 @@ private:
     pthread_t Thread;
     
     char buffer[MAX_RECV_LEN];
-    
+    uint32_t UserId;    
     bool Terminated;
     
 private:

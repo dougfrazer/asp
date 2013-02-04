@@ -1,5 +1,9 @@
 //*******************************************************************************
 // ASP Server
+// Main Applicattion
+// 
+//   This will handle setting up the entire application and dispatching the
+//   appropriate update/draw calls to the necessary services.
 //
 // @author Doug Frazer
 // December 2012
@@ -15,8 +19,8 @@
 #include "common_include.h"
 
 #include "network.h"
+#include "world.h"
 
-static const float MIN_FRAME_TIME = 1;
 
 //*******************************************************************************
 // Forward Declarations
@@ -41,8 +45,6 @@ int main()
         PreviousClock = CurrentClock;
         
         Main_Update(DeltaTime);
-//        
-//        sleep(MIN_FRAME_TIME);
     }
     
     Main_Deinit();
@@ -56,15 +58,18 @@ int main()
 static void Main_Init()
 {
     Network_Init();
+    World_Init();
 }
 //*******************************************************************************
 static void Main_Update(float DeltaTime)
 {
     Network_Update(DeltaTime);
+    World_Update();
 }
 //*******************************************************************************
 static void Main_Deinit()
 {
     Network_Deinit();
+    World_Deinit();
 }
 //*******************************************************************************

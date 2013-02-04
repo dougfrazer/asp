@@ -6,9 +6,20 @@
 // macros
 #define zero(a) memset(a, '\0', sizeof(*a))
 
+/* LinearInterpolate:
+ * take the value X and translate (within the range x0-x1) to the range y0-y1
+ *
+ *  y - y0     y1 - y0
+ * -------- = ---------
+ *  x - x0     x1 - x0
+ */
+#define LinearInterpolate(x, x0, x1, y0, y1) ( y0+ ( (float)(y1-y0) * ( (float)(x-x0)/(float)(x1-x0) ) ) )
+#define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
+
 // definitions
 static const unsigned int PORTNUM=12345;
 static const unsigned int MAX_RECV_LEN=1024;
+static const unsigned int WORLD_SIZE=5;
 
 // errors
 #define EOK 0
@@ -20,5 +31,14 @@ static const unsigned int MAX_RECV_LEN=1024;
 #define CERRNO
 typedef int cerrno;
 #endif
+
+// enums
+enum ASP_DIRECTION
+{
+    NORTH,
+    EAST,
+    WEST,
+    SOUTH,
+};
 
 #endif

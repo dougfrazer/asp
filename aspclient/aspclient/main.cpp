@@ -1,5 +1,9 @@
 //*******************************************************************************
-// ASP Server
+// ASP Client
+// Main Applicattion
+// 
+//   This will handle setting up the entire application and dispatching the
+//   appropriate update/draw calls to the necessary services.
 //
 // @author Doug Frazer
 // December 2012
@@ -38,7 +42,7 @@ int main()
     Main_Init();
     
     while(true) {
-        printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
+        //printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
         clock_t CurrentClock = clock();
         float DeltaTime = ((float)CurrentClock - (float)PreviousClock)/CLOCKS_PER_SEC;
         PreviousClock = CurrentClock;
