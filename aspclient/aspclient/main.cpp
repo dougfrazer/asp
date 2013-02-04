@@ -22,8 +22,6 @@
 #include "network.h"
 #include "keyboard.h"
 
-static const float MIN_FRAME_TIME = 1;
-
 //*******************************************************************************
 // Forward Declarations
 //*******************************************************************************
@@ -49,8 +47,6 @@ int main()
         
         Main_Update(DeltaTime);
         Main_Draw();
-        
-        sleep(MIN_FRAME_TIME);
     }
     
     Main_Deinit();
