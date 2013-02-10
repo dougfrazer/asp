@@ -69,7 +69,7 @@ void Network_Update(float DeltaTime)
     socklen_t socksize = sizeof(struct sockaddr_in);
     
     // update existing connections
-    for (std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it!=NetworkData.Threads.end(); it++) {
+    for (std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it!=NetworkData.Threads.end(); ++it) {
         NetworkThread* thread = *it;
         if(thread->IsDone()) {
             NetworkData.Threads.remove(thread);
@@ -96,5 +96,14 @@ void Network_Update(float DeltaTime)
 void Network_Deinit()
 {
     
+}
+//*******************************************************************************
+void Network_UpdatePosition(uint32_t UserId, uint32_t x, uint32_t y)
+{
+    printf("Updating user=%d to be at (%d,%d) for all machines\n", UserId, x, y);
+    for(std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it != NetworkData.Threads.end(); ++it) {
+        NetworkThread* Thread = *it;
+        Thread->SendDirectionAck(UserId, x, y);
+    }
 }
 

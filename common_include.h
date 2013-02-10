@@ -15,6 +15,7 @@
  */
 #define LinearInterpolate(x, x0, x1, y0, y1) ( y0+ ( (float)(y1-y0) * ( (float)(x-x0)/(float)(x1-x0) ) ) )
 #define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
+#define countof(x) (sizeof(x)/sizeof(x[0])
 
 // definitions
 static const unsigned int PORTNUM=12345;

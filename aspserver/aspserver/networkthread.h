@@ -6,13 +6,15 @@
 //  Copyright 2013 Douglas Frazer. All rights reserved.
 //
 
-#ifndef aspserver_networkthread_h
-#define aspserver_networkthread_h
+#ifndef __NETWORKTHREAD_H__
+#define __NETWORKTHREAD_H__
 
 #include <pthread.h>
 
 struct sockaddr_in;
 struct ASP_PACKET;
+struct timespec;
+class USER;
 
 class NetworkThread {
 public:
@@ -22,6 +24,7 @@ public:
 public:
     void Start();
     bool IsDone();
+    void SendDirectionAck(uint32_t UserId, uint32_t x, uint32_t y);
     
 private:
     // functions
@@ -30,8 +33,7 @@ private:
     void   UpdateTimers();
 
     void   SendKeepalive();
-    void   SendLoginAck(bool Success, uint32_t Error);
-    void   SendDirectionAck(ASP_DIRECTION Direction, uint32_t Magnitude);
+    void   SendLoginAck(bool Success, uint32_t Error, uint32_t AttemptedUserId);
     
     // data
     struct {
@@ -49,10 +51,12 @@ private:
     pthread_t Thread;
     
     char buffer[MAX_RECV_LEN];
-    uint32_t UserId;    
+    USER* User;
     bool Terminated;
     
 private:
+    timespec req;
+    timespec rem;
     static const uint SLEEP_TIMER = 1; // seconds
     static const float KEEPALIVE_TIMER = 5.0; // seconds
     static const float KEEPALIVE_TIMEOUT = 20.0; // seconds

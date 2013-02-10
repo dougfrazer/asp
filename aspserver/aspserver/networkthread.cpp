@@ -24,6 +24,7 @@
 #include "networkthread.h"
 #include "asppacket.h"
 #include "world.h"
+#include "user.h"
 
 
 // *******************************************************************************
@@ -48,7 +49,11 @@ NetworkThread::NetworkThread(int sockfd, struct sockaddr_in Address)
 
     Terminated = false;
 
-    UserId = 0;
+    User = NULL;
+
+    req.tv_sec = 0;
+    req.tv_nsec = 500000;
+    zero(&rem);
 
     rc = pthread_create(&Thread, NULL, NetworkThread_StartFunction, (void*)this);
     assert(rc == EOK);
@@ -82,7 +87,7 @@ void NetworkThread::Start()
         // see if we have a packet to be recieved
         rc = RecievePacket(&Packet, &len);
         if(rc == ASP_ESLEEP || errno == EWOULDBLOCK) {
-            sleep(SLEEP_TIMER);
+            nanosleep(&req, &rem);
             continue;
         } else if(Packet->Header.Type != NONE) {
             rc = ParsePacket(Packet, len);
@@ -152,8 +157,12 @@ cerrno NetworkThread::ParsePacket(ASP_PACKET* Packet, long len)
                     LoginPacket->UserId);
             // TODO: this needs to check whether the user is logged in, once we
             //       have a proper user module...
-            UserId = LoginPacket->UserId;
-            SendLoginAck(true, 0);
+            if(!USER::IsUserLoggedIn(LoginPacket->UserId)) {
+                User = new USER(LoginPacket->UserId);
+                SendLoginAck(true, 0, LoginPacket->UserId);
+            } else {
+                SendLoginAck(false, 1, LoginPacket->UserId);
+            }
         } break;
 
     case CLOSE_CONNECTION:
@@ -171,9 +180,10 @@ cerrno NetworkThread::ParsePacket(ASP_PACKET* Packet, long len)
                     len,
                     DirectionPacket->Direction,
                     DirectionPacket->Magnitude,
-                    UserId);
-            assert(UserId != 0);
-            SendDirectionAck((ASP_DIRECTION)DirectionPacket->Direction, DirectionPacket->Magnitude);
+                    User->id);
+            assert(User != NULL);
+            World_SetPosition((ASP_DIRECTION)DirectionPacket->Direction, DirectionPacket->Magnitude, User->id, &User->x, &User->y);
+            Network_UpdatePosition(User->id, User->x, User->y);
         } break;
             
     case KEEPALIVE:
@@ -219,8 +229,8 @@ void NetworkThread::SendKeepalive()
     struct pollfd fds;
     fds.fd = Data.sockfd;
     fds.events = POLLOUT;
-    if(poll(&fds, 1, 10) == 0) {
-        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+    if(poll(&fds, 1, 0) == 0) {
+        printf("[%lu] Socket not ready for write\n", (unsigned long)pthread_self());
         return;
     }
 
@@ -231,13 +241,13 @@ void NetworkThread::SendKeepalive()
     write(Data.sockfd, (void*)&Packet, sizeof(Packet));
 }
 // *******************************************************************************
-void NetworkThread::SendLoginAck(bool Success, uint32_t Error)
+void NetworkThread::SendLoginAck(bool Success, uint32_t Error, uint32_t AttemptedUserId)
 {
     struct pollfd fds;
     fds.fd = Data.sockfd;
     fds.events = POLLOUT;
-    if(poll(&fds, 1, 10) == 0) {
-        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+    if(poll(&fds, 1, 0) == 0) {
+        printf("[%lu] Socket not ready for write\n", (unsigned long)pthread_self());
         return;
     }
 
@@ -246,21 +256,32 @@ void NetworkThread::SendLoginAck(bool Success, uint32_t Error)
     Packet->Header.Length = sizeof(ASP_LOGIN_ACK_PACKET);
 
     ASP_LOGIN_ACK_PACKET* LoginAck = (ASP_LOGIN_ACK_PACKET*)&Packet->Body;
-    World_SetInitialPosition(UserId, &LoginAck->x, &LoginAck->y);
-    LoginAck->Successful = Success && UserId != 0;
     LoginAck->Error = Error;
-    LoginAck->UserId = UserId;
-    printf("[%lu] Sending a LOGIN ACK userId=%d position=(%d,%d)\n", (unsigned long)pthread_self(), UserId, LoginAck->x, LoginAck->y);
+    if(Success && User != NULL) {
+        LoginAck->Successful = true;
+        LoginAck->UserId = User->id;
+        LoginAck->x = User->x;
+        LoginAck->y = User->y;
+    } else {
+        LoginAck->Successful = false;
+        LoginAck->UserId = AttemptedUserId;
+        LoginAck->x = 0;
+        LoginAck->y = 0;
+    }
+    printf("[%lu] Sending a LOGIN ACK success=%s userId=%d position=(%d,%d)\n", 
+            (unsigned long)pthread_self(), 
+            LoginAck->Successful ? "true" : "false", 
+            LoginAck->UserId, LoginAck->x, LoginAck->y);
     write(Data.sockfd, (void*)buffer, sizeof(ASP_HEADER) + sizeof(ASP_LOGIN_ACK_PACKET));
 }
 // *******************************************************************************
-void NetworkThread::SendDirectionAck(ASP_DIRECTION Direction, uint32_t Magnitude)
+void NetworkThread::SendDirectionAck(uint32_t UserId, uint32_t x, uint32_t y)
 {
     struct pollfd fds;
     fds.fd = Data.sockfd;
     fds.events = POLLOUT;
-    if(poll(&fds, 1, 10) == 0) {
-        printf("[%lu] Socket not ready for write after 10ms\n", (unsigned long)pthread_self());
+    if(poll(&fds, 1, 0) == 0) {
+        printf("[%lu] Socket not ready for write\n", (unsigned long)pthread_self());
         return;
     }
 
@@ -269,8 +290,9 @@ void NetworkThread::SendDirectionAck(ASP_DIRECTION Direction, uint32_t Magnitude
     Packet->Header.Length = sizeof(ASP_DIRECTION_ACK_PACKET);
 
     ASP_DIRECTION_ACK_PACKET* DirectionAck = (ASP_DIRECTION_ACK_PACKET*)&Packet->Body;
-    World_SetPosition(Direction, Magnitude, UserId, &DirectionAck->x, &DirectionAck->y);
     DirectionAck->UserId = UserId;
+    DirectionAck->x = x;
+    DirectionAck->y = y;
     printf("[%lu] Sending a DIRECTION ACK (%d,%d) userId=%d\n", (unsigned long)pthread_self(), DirectionAck->x, DirectionAck->y, UserId);
     write(Data.sockfd, (void*)buffer, sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_ACK_PACKET));
 }

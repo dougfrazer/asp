@@ -80,7 +80,7 @@ static void Network_ProcessPacket(ASP_PACKET* Packet, long len)
                 World_SetPosition(LoginPacket->x, LoginPacket->y, LoginPacket->UserId);
             } else {
                 printf("Login unnsuccessful, (error %d) trying with a userid=%d\n", LoginPacket->Error, LoginPacket->UserId+1);
-                Network_SendLoginRequest( LoginPacket->UserId++ );
+                Network_SendLoginRequest( LoginPacket->UserId + 1 );
             }
         } break;
     case KEEPALIVE:
