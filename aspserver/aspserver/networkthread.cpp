@@ -52,7 +52,7 @@ NetworkThread::NetworkThread(int sockfd, struct sockaddr_in Address)
     User = NULL;
 
     req.tv_sec = 0;
-    req.tv_nsec = 500000;
+    req.tv_nsec = 50000;
     zero(&rem);
 
     rc = pthread_create(&Thread, NULL, NetworkThread_StartFunction, (void*)this);
