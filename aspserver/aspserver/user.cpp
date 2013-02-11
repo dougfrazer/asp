@@ -75,11 +75,9 @@ void USER::RemoveFromTree()
         (*Parent)->Right = *Node == (*Parent)->Right ? NULL : (*Parent)->Right;
         (*Parent)->Left = *Node == (*Parent)->Left ? NULL : (*Parent)->Left;
     } else if((*Node)->Left == NULL && (*Node)->Right != NULL) {
-        (*Parent)->Right = *Node == (*Parent)->Right ? (*Node)->Right : (*Parent)->Right;
-        (*Parent)->Left = *Node == (*Parent)->Left ? (*Node)->Right : (*Parent)->Left;
+        *Node = (*Node)->Right;
     } else if((*Node)->Left != NULL && (*Node)->Right == NULL) {
-        (*Parent)->Right = *Node == (*Parent)->Right ? (*Node)->Left : (*Parent)->Right;
-        (*Parent)->Left = *Node == (*Parent)->Left ? (*Node)->Left : (*Parent)->Left;
+        *Node = (*Node)->Left;
     } else {
         *Node = (*Parent)->Left == *Node ? (*Node)->Left : (*Node)->Right;
     }
