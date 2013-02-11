@@ -34,7 +34,7 @@ void World_Init()
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(1024, 768);
     
-    glutCreateWindow("GLUT Program");
+    glutCreateWindow("Awesome Program");
     
     glutDisplayFunc(World_Draw);
     glutReshapeFunc(World_Reshape);

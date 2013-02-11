@@ -104,7 +104,7 @@ void World_SetInitialPosition(uint32_t UserId, uint32_t *x, uint32_t *y)
     for(int i = 0; i < WORLD_SIZE; i++) {
         for(int j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
-                printf("Player (%d) found at position (%d,%d)\n", UserId, i, j);
+                printf("[%lu] Player (%d) found at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
                 *x = i;
                 *y = j;
                 return;

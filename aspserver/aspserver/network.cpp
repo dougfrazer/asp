@@ -81,7 +81,6 @@ void Network_Update(float DeltaTime)
     // listen for new connections
     int ConnectedSocket = accept(NetworkData.sockfd, (struct sockaddr*)&Client, &socksize);
     if(ConnectedSocket < 0) {
-//        printf("No connection this frame...\n");
         return;
     }
     

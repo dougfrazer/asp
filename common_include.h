@@ -20,7 +20,7 @@
 // definitions
 static const unsigned int PORTNUM=12345;
 static const unsigned int MAX_RECV_LEN=1024;
-static const unsigned int WORLD_SIZE=5;
+static const unsigned int WORLD_SIZE=10;
 
 // errors
 #define EOK 0

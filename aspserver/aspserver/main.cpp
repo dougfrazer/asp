@@ -41,9 +41,8 @@ int main()
 
     Main_Init();
     
-    // TODO: server shouldn't do this
+    // TODO: have a listening thread?
     while(true) {
-//        printf("Running main update on thread=%lu\n", (unsigned long)pthread_self());
         clock_t CurrentClock = clock();
         float DeltaTime = ((float)CurrentClock - (float)PreviousClock)/CLOCKS_PER_SEC;
         PreviousClock = CurrentClock;

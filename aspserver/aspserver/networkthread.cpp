@@ -97,7 +97,7 @@ void NetworkThread::Start()
                 break;
             }
         } else {
-            printf("[%s:%d] Error %d (V%s)", __FILE__, __LINE__, errno, strerror(errno));
+            printf("[%s:%d] Error %d (%s)", __FILE__, __LINE__, errno, strerror(errno));
             Terminated = true;
             break;
         }
