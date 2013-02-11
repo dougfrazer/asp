@@ -35,6 +35,9 @@ static void Main_Deinit();
 int main()
 {
     time_t PreviousClock = clock();
+    struct timespec req, res;
+    req.tv_sec = 0;
+    req.tv_nsec = 500000;
 
     Main_Init();
     
@@ -46,6 +49,7 @@ int main()
         PreviousClock = CurrentClock;
         
         Main_Update(DeltaTime);
+        nanosleep(&req, &res);
     }
     
     Main_Deinit();
