@@ -21,6 +21,7 @@
 static const unsigned int PORTNUM=12345;
 static const unsigned int MAX_RECV_LEN=1024;
 static const unsigned int WORLD_SIZE=10;
+static const float SEND_RATE = 1/20.0;
 
 // errors
 #define EOK 0

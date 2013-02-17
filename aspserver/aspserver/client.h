@@ -22,16 +22,24 @@ public:
 
 public:
     void ProcessData(char* Buffer, int Size);
+    void GetWorldState();
+    void GetSendBuffer(char** Buffer, size_t* Size);
+
+    int UserId;
+    sockaddr Address;
+    socklen_t AddressLength;
 
 private:
     void HandleKeepalive();
     void HandleDirection(ASP_DIRECTION_PACKET* Data);
     void HandleLogin(ASP_LOGIN_PACKET* Data);
+    void QueuePacket(char* buffer, size_t size);
 
 private:
-    int UserId;
-    sockaddr Address;
-    socklen_t AddressLength;
+    static const int TRANSMIT_SIZE = 1500;
+    static const int BUFFER_SIZE = 3000;
+    char SendBuffer[BUFFER_SIZE];
+    int SendBufferSize;
 };
 
 #endif

@@ -111,14 +111,6 @@ void Network_Init()
 // *****************************************************************************
 static void Network_Read(char* buffer, int size, ssize_t* outlen)
 {
-    struct pollfd fds;
-    fds.fd = NetworkData.sockfd;
-    fds.events = POLLIN;
-    if(poll(&fds, 1, 0) == 0) {
-        //no data to read
-        return;
-    }
-
     *outlen = read(NetworkData.sockfd, (void*)buffer, sizeof(ASP_HEADER));
     if(*outlen > 0) {
         assert(*outlen == sizeof(ASP_HEADER));

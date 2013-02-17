@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include "asppacket.h"
 #include "common_include.h"
 #include "world.h"
 
@@ -70,3 +71,26 @@ void World_SetInitialPosition(uint32_t UserId)
     }
     assert(false); // our world is full???
 }
+//*******************************************************************************
+void World_RequestState(char* Buffer, size_t* Size)
+{
+    ASP_HEADER Header;
+    ASP_DIRECTION_ACK_PACKET Data;
+    Header.Type = DIRECTION_ACK;
+    Header.Length = sizeof(ASP_DIRECTION_ACK_PACKET);
+
+    for(int i = 0; i < WORLD_SIZE; i++) {
+        for(int j = 0; j < WORLD_SIZE; j++) {
+            if(WorldMap[i][j] != 0) {
+                Data.x = i;
+                Data.y = j;
+                Data.UserId = WorldMap[i][j];
+                memcpy(Buffer + *Size, &Header, sizeof(ASP_HEADER));
+                *Size += sizeof(ASP_HEADER);
+                memcpy(Buffer + *Size, &Data, sizeof(ASP_DIRECTION_ACK_PACKET));
+                *Size += sizeof(ASP_DIRECTION_ACK_PACKET);
+            }
+        }
+    }
+}
+//*******************************************************************************

@@ -7,6 +7,7 @@
 // December 2012
 //*******************************************************************************
 
+#include <list>
 #include <unordered_map>
 #include "hashmap.h"
 
@@ -28,10 +29,17 @@ public:
     void SendPacket(char* buffer, size_t size, sockaddr* dest, socklen_t addrlen);
 
 private:
+    void TransmitPackets();
+
     typedef std::unordered_map<NetworkKey,CLIENT*>::const_iterator MapIterator;
     std::unordered_map<NetworkKey,CLIENT*,NetworkKeyHash,NetworkKeyEq> HashMap;
+
+    std::list<CLIENT*> ClientList;
+    typedef std::list<CLIENT*>::iterator ListIterator;
+
     int sockfd;
-    char Buffer[1500];
+    char RecvBuffer[1500];
+    float Timer;
 };
 
 // C-style interface
@@ -39,5 +47,6 @@ void Network_Init();
 void Network_Deinit();
 void Network_Update(float DeltaTime);
 void Network_SendPacket(char* buffer, size_t size, sockaddr* dest, socklen_t addrlen);
+void Network_RequestTransmit();
 
 #endif

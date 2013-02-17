@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <unordered_map>
 #include <stdio.h>
+#include <string.h>
 
 #include "network.h"
 #include "asppacket.h"
@@ -126,6 +127,37 @@ void CLIENT::HandleLogin(ASP_LOGIN_PACKET* Data)
         LoginAck->Success = false;
     }
     
-    Network_SendPacket(buffer, sizeof(ASP_HEADER) + Packet->Header.Length, &Address, AddressLength);
+    QueuePacket(buffer, sizeof(ASP_HEADER) + Packet->Header.Length);
 }
 //*******************************************************************************
+void CLIENT::QueuePacket(char* buffer, size_t size)
+{
+    if(SendBufferSize + size >= TRANSMIT_SIZE) {
+        Network_RequestTransmit();
+    }
+    assert(SendBufferSize + size < BUFFER_SIZE);
+
+    memcpy(SendBuffer + SendBufferSize, buffer, size);
+    SendBufferSize += size;
+}
+//*******************************************************************************
+void CLIENT::GetWorldState()
+{
+    char   WorldState[1500];
+    size_t WorldStateSize = 0;
+
+    World_RequestState(WorldState, &WorldStateSize);
+
+    memcpy(SendBuffer + SendBufferSize, WorldState, WorldStateSize);
+    SendBufferSize += WorldStateSize;
+}
+//*******************************************************************************
+void CLIENT::GetSendBuffer(char** Buffer, size_t* Size)
+{
+    // It is assumed we wipe out the data after this call
+    *Buffer = &SendBuffer[0];
+    *Size = SendBufferSize;
+    SendBufferSize = 0;
+}
+//*******************************************************************************
+
