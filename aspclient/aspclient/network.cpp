@@ -73,7 +73,7 @@ static void Network_ProcessPacket(ASP_PACKET* Packet, long len)
     case LOGIN_ACK:
         {
             ASP_LOGIN_ACK_PACKET* LoginPacket = (ASP_LOGIN_ACK_PACKET*)&Packet->Body;
-            if(LoginPacket->Successful) {
+            if(LoginPacket->Success) {
                 printf("Login successful as userid=%d position=(%d,%d)\n", LoginPacket->UserId, LoginPacket->x, LoginPacket->y);
                 NetworkData.LoginId = LoginPacket->UserId;
                 NetworkData.LoginConfirmed = true;
@@ -157,6 +157,7 @@ void Network_Deinit()
 void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude)
 {
     struct pollfd fds;
+    uint32_t x, y;
     fds.fd = NetworkData.sockfd;
     fds.events = POLLOUT;
     if(poll(&fds, 1, 10) == 0) {
@@ -165,14 +166,15 @@ void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude)
     }
     char buffer[MAX_RECV_LEN];
     
-    ASP_PACKET Packet;
-    ASP_DIRECTION_PACKET DirectionalPacket;
-    Packet.Header.Type = DIRECTION;
-    Packet.Header.Length = sizeof(ASP_DIRECTION_PACKET);
-    DirectionalPacket.Direction = (int)direction;
-    DirectionalPacket.Magnitude = magnitude;
-    memcpy(&Packet.Body, &DirectionalPacket, sizeof(DirectionalPacket));
-    memcpy(buffer, &Packet, sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_PACKET));
+    bool MoveSuccessful = World_AttemptMovement(direction, magnitude, NetworkData.LoginId, &x, &y);
+    if(!MoveSuccessful) return; // TODO: send it anyway?
+
+    ASP_PACKET* Packet = (ASP_PACKET*)&buffer;
+    ASP_DIRECTION_PACKET* DirectionalPacket = (ASP_DIRECTION_PACKET*)&Packet->Body;
+    Packet->Header.Type = DIRECTION;
+    Packet->Header.Length = sizeof(ASP_DIRECTION_PACKET);
+    DirectionalPacket->x = x;
+    DirectionalPacket->y = y;
     
     ssize_t size = write(NetworkData.sockfd, buffer, sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_PACKET));
     if(size <= 0) {

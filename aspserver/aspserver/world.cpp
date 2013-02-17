@@ -18,10 +18,6 @@
 #include "common_include.h"
 #include "world.h"
 
-struct Position {
-    int x;
-    int y;
-};
 static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
 
 //*******************************************************************************
@@ -40,56 +36,14 @@ void World_Deinit()
     zero(&WorldMap);
 }
 //*******************************************************************************
-void World_SetPosition(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId)
+bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 {
     // TODO: thread concurrency?
-    // TODO: heavy lifting should be done by the CLIENT not the server... move all this to the client and send X and Y not direction and magnitude
-    Position CurrentPosition;
-    bool PlayerFound = false;
-    for(int i = 0; i < WORLD_SIZE; i++) {
-        for(int j = 0; j < WORLD_SIZE; j++) {
-            if(WorldMap[i][j] == UserId) {
-                CurrentPosition.x = i;
-                CurrentPosition.y = j;
-                PlayerFound = true;
-            }
-        }
+    if(WorldMap[x][y] == 0) {
+        WorldMap[x][y] = UserId;
+        return true;
     }
-    assert(PlayerFound); // he doesnt exist? wtf?
-    
-    Position Destination;
-    switch(Direction)
-    {
-    case NORTH:
-        {
-            Destination.x = CurrentPosition.x;
-            Destination.y = clamp(CurrentPosition.y + Magnitude, 0, WORLD_SIZE - 1);
-        } break;
-    case SOUTH:
-        {
-            Destination.x = CurrentPosition.x;
-            Destination.y = clamp(CurrentPosition.y - Magnitude, 0, WORLD_SIZE - 1);
-        } break;
-    case EAST:
-        {
-            Destination.x = clamp(CurrentPosition.x + Magnitude, 0, WORLD_SIZE - 1);
-            Destination.y = CurrentPosition.y;
-        } break;
-    case WEST:
-        {
-            Destination.x = clamp(CurrentPosition.x - Magnitude, 0, WORLD_SIZE - 1);
-            Destination.y = CurrentPosition.y;
-        } break;
-    }
-    if(WorldMap[Destination.x][Destination.y] == 0 ) {
-        // noone is there
-        WorldMap[Destination.x][Destination.y] = UserId;
-        WorldMap[CurrentPosition.x][CurrentPosition.y] = 0;
-    } else if(WorldMap[Destination.x][Destination.y] == UserId) {
-        // this user is currently there (probably a bug)
-    } else {
-        // someone else is there, cant move there
-    }
+    return false;
 }
 //*******************************************************************************
 void World_SetInitialPosition(uint32_t UserId)

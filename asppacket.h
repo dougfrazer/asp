@@ -105,8 +105,8 @@ struct ASP_DIRECTION_ACK_PACKET
  ******************************************************************************/
 struct ASP_DIRECTION_PACKET
 {
-    uint8_t    Direction;
-    uint8_t    Magnitude;
+    uint8_t    x;
+    uint8_t    y;
 };
 
 #endif

@@ -134,6 +134,59 @@ void World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
     WorldMap[x][y] = UserId;
 }
 // *****************************************************************************
+bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId, uint32_t* x, uint32_t *y)
+{
+    Position CurrentPosition;
+    bool PlayerFound=false;
+    for(uint32_t i=0; i < WORLD_SIZE; i++){
+        for(uint32_t j=0; j < WORLD_SIZE; j++){
+            if(WorldMap[i][j] == UserId){
+                CurrentPosition.x = i;
+                CurrentPosition.y = j;
+                PlayerFound = true;
+            }
+        }
+    }
+    if(!PlayerFound) return false;
+
+    Position Destination;
+    switch(Direction)
+    {
+    case NORTH:
+        {
+            Destination.x = CurrentPosition.x;
+            Destination.y = clamp(CurrentPosition.y + Magnitude, 0, WORLD_SIZE - 1);
+        } break;
+    case SOUTH:
+        {
+            Destination.x = CurrentPosition.x;
+            Destination.y = clamp(CurrentPosition.y - Magnitude, 0, WORLD_SIZE - 1);
+        } break;
+    case EAST:
+        {
+            Destination.x = clamp(CurrentPosition.x + Magnitude, 0, WORLD_SIZE - 1);
+            Destination.y = CurrentPosition.y;
+        } break;
+    case WEST:
+        {
+            Destination.x = clamp(CurrentPosition.x - Magnitude, 0, WORLD_SIZE - 1);
+            Destination.y = CurrentPosition.y;
+        } break;
+    }
+    if(WorldMap[Destination.x][Destination.y] == 0 ) {
+        // noone is there
+        *x = Destination.x;
+        *y = Destination.y;
+        return true;
+    } else if(WorldMap[Destination.x][Destination.y] == UserId) {
+        // this user is currently there (probably a bug)
+        printf("Tried to move where you already are\n");
+    } else {
+        // someone else is there, cant move there
+    }
+    return false;
+}
+// *****************************************************************************
 static void World_Reshape(int width, int height)
 {
     glViewport(0, 0, width, height);

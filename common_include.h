@@ -42,4 +42,9 @@ enum ASP_DIRECTION
     SOUTH,
 };
 
+struct Position {
+    int x;
+    int y;
+};
+
 #endif

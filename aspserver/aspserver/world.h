@@ -18,7 +18,7 @@
 void World_Init();
 void World_Update();
 void World_Deinit();
-void World_SetPosition(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId);
+bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId);
 void World_SetInitialPosition(uint32_t UserId);
 
 #endif

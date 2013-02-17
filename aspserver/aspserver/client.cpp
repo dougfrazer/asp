@@ -95,7 +95,9 @@ void CLIENT::HandleDirection(ASP_DIRECTION_PACKET* Data)
         printf("[%d] User not logged in, can not process movement packet\n", UserId);
     }
 
-    World_SetPosition((ASP_DIRECTION)Data->Direction, Data->Magnitude, UserId);
+    if(!World_SetPosition(Data->x, Data->y, UserId)) {
+        printf("Error setting user %d to position (%d,%d)\n", UserId, Data->x, Data->y);
+    }
 
 }
 //*******************************************************************************
