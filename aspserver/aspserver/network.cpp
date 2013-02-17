@@ -7,7 +7,6 @@
 //
 
 #include <assert.h>
-#include <list>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,23 +22,36 @@
 #include "common_include.h"
 
 #include "network.h"
-#include "networkthread.h"
 #include "asppacket.h"
+#include "client.h" 
 
-static struct {
-    int sockfd;
-    std::list<NetworkThread*> Threads;
-} NetworkData;
+//*******************************************************************************
+// Singleton Instance
+//*******************************************************************************
+static NETWORK Network;
 
+//*******************************************************************************
+// Constructor/Deconstructor
+//*******************************************************************************
+NETWORK::NETWORK()
+{
+    // what to do...
+    sockfd = -1;
+}
+//*******************************************************************************
+NETWORK::~NETWORK()
+{
+    // never called, this is a global singleton
+}
+//*******************************************************************************
 
 //*******************************************************************************
 // Public Interface
 //*******************************************************************************
-void Network_Init()
+void NETWORK::Init()
 {
     printf("Initializing Network...\n");
     cerrno rc = EOK;
-    NetworkData.sockfd = -1;
     struct sockaddr_in Server;
     
     zero(&Server);
@@ -48,61 +60,86 @@ void Network_Init()
     Server.sin_addr.s_addr = INADDR_ANY;
     
     // establish the socket
-    NetworkData.sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
-    if(errno != EOK || NetworkData.sockfd <= 0) {
+    sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(errno != EOK || sockfd <= 0) {
         exit(EXIT_FAILURE);
     }
     
     // bind the socket
-    if(bind(NetworkData.sockfd, (struct sockaddr*)&Server, sizeof(Server)) != EOK) {
+    if(bind(sockfd, (struct sockaddr*)&Server, sizeof(Server)) != EOK) {
         exit(EXIT_FAILURE);
     }
     
-    // listen for incoming messages, up to 1 pending connection
     printf("Listening for new connections\n");
-    listen(NetworkData.sockfd, 1);
+
 }
 //*******************************************************************************
-void Network_Update(float DeltaTime)
+void NETWORK::Deinit()
 {
-    struct sockaddr_in Client;
+    
+}
+//*******************************************************************************
+void NETWORK::Update(float DeltaTime)
+{
+    NetworkKey Key;
+    long len = 0;
+    struct sockaddr_in ClientAddr;
     socklen_t socksize = sizeof(struct sockaddr_in);
     
-    // update existing connections
-    for (std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it!=NetworkData.Threads.end(); ++it) {
-        NetworkThread* thread = *it;
-        if(thread->IsDone()) {
-            NetworkData.Threads.remove(thread);
-            delete(thread);
-            it = NetworkData.Threads.begin(); // restart from beginning of list to avoid a crash (TODO: fix this)
-        }
-    }
-    
-    // listen for new connections
-    int ConnectedSocket = accept(NetworkData.sockfd, (struct sockaddr*)&Client, &socksize);
-    if(ConnectedSocket < 0) {
+    // see if we got any data
+    len = recvfrom(sockfd, Buffer, sizeof(Buffer), 0, (struct sockaddr*)&ClientAddr, &socksize);
+    if(len == 0) {
+        return;
+    } else if(len == -1) {
+        printf("Error recieving on main socket %d (%s)\n", errno, strerror(errno));
         return;
     }
     
-    printf("Incoming connection from %s\n", inet_ntoa(Client.sin_addr));
-    
-    // spawn a new thread for the new connection
-    NetworkThread* Thread = new NetworkThread(ConnectedSocket, Client);
-    assert(Thread != NULL);
-    NetworkData.Threads.push_front(Thread);
+    // Lookup who this data belongs to
+    Key.Address = ClientAddr.sin_addr;
+    Key.Port = ClientAddr.sin_port;
+    MapIterator Found = HashMap.find(Key);
+    if(Found != HashMap.end()) {
+        printf("Incoming packet for %s (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), len);
+        Found->second->ProcessData(Buffer, len); 
+    } else {
+        printf("Incoming connection from %s (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), len);
+        CLIENT* Client = new CLIENT((struct sockaddr*)&ClientAddr, socksize);
+        HashMap.insert( { Key, Client } );
+        Client->ProcessData(Buffer, len);
+    }
+}
+//*******************************************************************************
+void NETWORK::SendPacket(char* buffer, size_t size, sockaddr* dest, socklen_t addrlen)
+{
+    long len = sendto(sockfd, buffer, size, 0, dest, addrlen);
+    if(len == -1 || errno != 0) {
+        printf("Error writing to network device %d (%s)\n", errno, strerror(errno));
+        return;
+    }
+}
+//*******************************************************************************
+
+//*******************************************************************************
+// C-Style interface
+//*******************************************************************************
+void Network_Init()
+{
+    Network.Init();
 }
 //*******************************************************************************
 void Network_Deinit()
 {
-    
+    Network.Deinit();
 }
 //*******************************************************************************
-void Network_UpdatePosition(uint32_t UserId, uint32_t x, uint32_t y)
+void Network_Update(float DeltaTime)
 {
-    printf("Updating user=%d to be at (%d,%d) for all machines\n", UserId, x, y);
-    for(std::list<NetworkThread*>::iterator it=NetworkData.Threads.begin(); it != NetworkData.Threads.end(); ++it) {
-        NetworkThread* Thread = *it;
-        Thread->SendDirectionAck(UserId, x, y);
-    }
+    Network.Update(DeltaTime);
 }
-
+//*******************************************************************************
+void Network_SendPacket(char* buffer, size_t size, sockaddr* dest, socklen_t addrlen)
+{
+    Network.SendPacket(buffer, size, dest, addrlen);
+}
+//*******************************************************************************

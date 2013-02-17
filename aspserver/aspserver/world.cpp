@@ -40,7 +40,7 @@ void World_Deinit()
     zero(&WorldMap);
 }
 //*******************************************************************************
-void World_SetPosition(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId, uint32_t *x_out, uint32_t *y_out)
+void World_SetPosition(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId)
 {
     // TODO: thread concurrency?
     // TODO: heavy lifting should be done by the CLIENT not the server... move all this to the client and send X and Y not direction and magnitude
@@ -85,28 +85,20 @@ void World_SetPosition(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t Use
         // noone is there
         WorldMap[Destination.x][Destination.y] = UserId;
         WorldMap[CurrentPosition.x][CurrentPosition.y] = 0;
-        *x_out = Destination.x;
-        *y_out = Destination.y;
     } else if(WorldMap[Destination.x][Destination.y] == UserId) {
         // this user is currently there (probably a bug)
-        *x_out = Destination.x;
-        *y_out = Destination.y;
     } else {
         // someone else is there, cant move there
-        *x_out = CurrentPosition.x;
-        *y_out = CurrentPosition.y;
     }
 }
 //*******************************************************************************
-void World_SetInitialPosition(uint32_t UserId, uint32_t *x, uint32_t *y)
+void World_SetInitialPosition(uint32_t UserId)
 {
     // See if he is for some reason already in our world
     for(int i = 0; i < WORLD_SIZE; i++) {
         for(int j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
                 printf("[%lu] Player (%d) found at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
-                *x = i;
-                *y = j;
                 return;
             }
         }
@@ -118,8 +110,6 @@ void World_SetInitialPosition(uint32_t UserId, uint32_t *x, uint32_t *y)
             if(WorldMap[i][j] == 0) {
                 printf("[%lu] Player (%d) placed at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
                 WorldMap[i][j] = UserId;
-                *x = i;
-                *y = j;
                 return;
             }
         }

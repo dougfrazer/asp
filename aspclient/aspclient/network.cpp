@@ -93,7 +93,7 @@ static void Network_ProcessPacket(ASP_PACKET* Packet, long len)
 // *****************************************************************************
 void Network_Init()
 {
-    NetworkData.sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+    NetworkData.sockfd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
     assert(NetworkData.sockfd > 0);
     
     zero(&NetworkData.Destination);

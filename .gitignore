@@ -1,2 +1,4 @@
 aspclient/aspclient.out
 aspserver/aspserver.out
+aspserver/aspserver/*.gch
+aspserver/aspserver/old/

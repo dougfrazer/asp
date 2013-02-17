@@ -27,8 +27,6 @@ enum ASP_PACKET_TYPE
     LOGIN_ACK,
     DIRECTION,
     DIRECTION_ACK,
-    CLOSE_CONNECTION,
-    PLAYER_UPDATE,
     KEEPALIVE,
 };
 
@@ -79,7 +77,7 @@ struct ASP_LOGIN_PACKET
 struct ASP_LOGIN_ACK_PACKET
 {
     uint32_t       UserId;
-    uint32_t       Successful  : 1;
+    uint32_t       Success     : 1;
     uint32_t       Error       : 15;
     uint32_t       Unused      : 16;
     uint32_t       x;
