@@ -2,3 +2,5 @@ aspclient/aspclient.out
 aspserver/aspserver.out
 aspserver/aspserver/*.gch
 aspserver/aspserver/old/
+aspserver/aspserver/*.swp
+aspclient/aspclient/*.swp
