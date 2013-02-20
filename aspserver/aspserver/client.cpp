@@ -113,18 +113,25 @@ void CLIENT::HandleLogin(ASP_LOGIN_PACKET* Data)
     Packet = (ASP_PACKET*)buffer;
     Packet->Header.Type = LOGIN_ACK;
     Packet->Header.Length = sizeof(ASP_LOGIN_ACK_PACKET);
-    LoginAck = (ASP_LOGIN_ACK_PACKET*)(&Packet->Body);
+    LoginAck = (ASP_LOGIN_ACK_PACKET*)(&Packet->Body[0]);
     
     Client = ConnectedClients.find(Data->UserId);
     if(Client == ConnectedClients.end()) {
         printf("[%d] Login with userid %d\n", UserId, Data->UserId);
         ConnectedClients.insert( { Data->UserId, this } );
         UserId = Data->UserId;
-        LoginAck->Success = true;
         World_SetInitialPosition(UserId);
+        LoginAck->Success = true;
+        LoginAck->UserId = UserId;
+        LoginAck->x = 0;
+        LoginAck->y = 0;
     } else {
         printf("[%d] User with id=%d already exists\n", UserId, Data->UserId);
         LoginAck->Success = false;
+        LoginAck->UserId = Data->UserId;
+        LoginAck->x = 0;
+        LoginAck->y = 0;
+        LoginAck->Error = 1; // TODO: enumerate errors
     }
     
     QueuePacket(buffer, sizeof(ASP_HEADER) + Packet->Header.Length);
