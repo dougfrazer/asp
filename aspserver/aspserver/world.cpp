@@ -22,6 +22,13 @@
 static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
 
 //*******************************************************************************
+// Forward Declarations
+//*******************************************************************************
+static bool World_FindPlayer(uint32_t UserId, int* x, int* y);
+
+//*******************************************************************************
+// Public Interface
+//*******************************************************************************
 void World_Init()
 {
     zero(&WorldMap);
@@ -39,7 +46,17 @@ void World_Deinit()
 //*******************************************************************************
 bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 {
-    // TODO: thread concurrency?
+    int x_curr = 0;
+    int y_curr = 0;
+    
+    // Find Player
+    if(World_FindPlayer(UserId, &x_curr, &y_curr)) {
+        WorldMap[x_curr][y_curr] = 0;
+    } else {
+        printf("Got a SetPosition request on a user that doesnt exist in our world (%d)", UserId);
+        return false;
+    }
+
     if(WorldMap[x][y] == 0) {
         WorldMap[x][y] = UserId;
         return true;
@@ -92,5 +109,20 @@ void World_RequestState(char* Buffer, size_t* Size)
             }
         }
     }
+}
+//*******************************************************************************
+static bool World_FindPlayer(uint32_t UserId, int* x, int* y)
+{
+    // TODO: more efficient algorithm
+    for(int i = 0; i < WORLD_SIZE; i++) {
+        for(int j = 0; j < WORLD_SIZE; j++) {
+            if(WorldMap[i][j] == UserId) {
+                *x = i;
+                *y = j;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 //*******************************************************************************
