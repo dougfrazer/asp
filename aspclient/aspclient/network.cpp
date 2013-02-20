@@ -75,7 +75,7 @@ static void Network_SendLoginRequest(uint32_t UserId)
 // *****************************************************************************
 static void Network_ProcessDirectionAckPacket(ASP_DIRECTION_ACK_PACKET* Data)
 {
-    printf("Recieved a DirectionAck packet\n");
+    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d]\n", Data->UserId, Data->x, Data->y);
     World_SetPosition( Data->x, Data->y, Data->UserId );
 }
 // *****************************************************************************
@@ -180,8 +180,10 @@ void Network_Update(float DeltaTime)
     char buffer[MAX_RECV_LEN];
     ssize_t len = 0;
     //Network_SendTestPacket();
+    do {
     Network_Read(buffer, sizeof(buffer), &len);    
     if(len > 0) Network_ProcessPackets(buffer, len);
+    } while( len > 0);
 }
 // *****************************************************************************
 void Network_Deinit()
