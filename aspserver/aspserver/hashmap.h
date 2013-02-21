@@ -8,6 +8,7 @@
 //*******************************************************************************
 
 #include <netinet/in.h>
+#include <functional>
 
 typedef struct {
     in_addr        Address;
@@ -30,3 +31,10 @@ typedef struct {
 typedef struct {
     long operator()(const NetworkKey &x, const NetworkKey &y) const { return HashEquals(x, y); }
 } NetworkKeyEq;
+
+namespace std {
+	template<> struct hash<NetworkKey> {
+		long operator()(const NetworkKey &key) { return HashFunction(key); }
+		long operator()(const NetworkKey &x, const NetworkKey &y) const { return HashEquals(x, y); }
+	};
+}
