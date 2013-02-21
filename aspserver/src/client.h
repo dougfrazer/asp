@@ -36,10 +36,10 @@ private:
     void QueuePacket(char* buffer, size_t size);
 
 private:
-    static const int TRANSMIT_SIZE = 1500;
-    static const int BUFFER_SIZE = 3000;
+    static const unsigned int TRANSMIT_SIZE = 1500;
+    static const unsigned int BUFFER_SIZE = 3000;
     char SendBuffer[BUFFER_SIZE];
-    int SendBufferSize;
+    unsigned int SendBufferSize;
 };
 
 #endif

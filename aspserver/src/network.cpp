@@ -19,10 +19,10 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "common_include.h"
+#include "includes/common_include.h"
 
 #include "network.h"
-#include "asppacket.h"
+#include "includes/asppacket.h"
 #include "client.h" 
 
 //*******************************************************************************
@@ -51,7 +51,6 @@ NETWORK::~NETWORK()
 void NETWORK::Init()
 {
     printf("Initializing Network...\n");
-    cerrno rc = EOK;
     struct sockaddr_in Server;
     
     zero(&Server);

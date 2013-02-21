@@ -12,7 +12,7 @@
 #include <GL/freeglut.h>
 #include <GL/glut.h>
 
-#include "common_include.h"
+#include "includes/common_include.h"
 
 #include "keyboard.h"
 #include "world.h"
@@ -137,7 +137,7 @@ void World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 // *****************************************************************************
 bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId, uint32_t* x, uint32_t *y)
 {
-    Position CurrentPosition;
+  Position CurrentPosition = {0};
     bool PlayerFound=false;
     for(uint32_t i=0; i < WORLD_SIZE; i++){
         for(uint32_t j=0; j < WORLD_SIZE; j++){
@@ -150,7 +150,8 @@ bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t
     }
     if(!PlayerFound) return false;
 
-    Position Destination;
+    Position Destination = {0};
+
     switch(Direction)
     {
     case NORTH:

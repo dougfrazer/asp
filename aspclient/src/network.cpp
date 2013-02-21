@@ -18,8 +18,8 @@
 #include <unistd.h>
 
 #include "network.h"
-#include "common_include.h"
-#include "asppacket.h"
+#include "includes/common_include.h"
+#include "includes/asppacket.h"
 #include "keyboard.h"
 #include "world.h"
 

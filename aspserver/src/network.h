@@ -8,7 +8,7 @@
 //*******************************************************************************
 
 #include <list>
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include "hashmap.h"
 
 #ifndef __NETWORK_H__
@@ -31,8 +31,8 @@ public:
 private:
     void TransmitPackets();
 
-    typedef std::unordered_map<NetworkKey,CLIENT*>::const_iterator MapIterator;
-    std::unordered_map<NetworkKey,CLIENT*,NetworkKeyHash,NetworkKeyEq> HashMap;
+    typedef std::tr1::unordered_map<NetworkKey,CLIENT*>::const_iterator MapIterator;
+    std::tr1::unordered_map<NetworkKey,CLIENT*,NetworkKeyHash,NetworkKeyEq> HashMap;
 
     std::list<CLIENT*> ClientList;
     typedef std::list<CLIENT*>::iterator ListIterator;

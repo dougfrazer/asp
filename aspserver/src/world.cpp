@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include "asppacket.h"
-#include "common_include.h"
+#include "includes/asppacket.h"
+#include "includes/common_include.h"
 #include "world.h"
 
 static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
@@ -67,8 +67,8 @@ bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 void World_SetInitialPosition(uint32_t UserId)
 {
     // See if he is for some reason already in our world
-    for(int i = 0; i < WORLD_SIZE; i++) {
-        for(int j = 0; j < WORLD_SIZE; j++) {
+    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
+        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
                 printf("[%lu] Player (%d) found at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
                 return;
@@ -77,8 +77,8 @@ void World_SetInitialPosition(uint32_t UserId)
     }
 
     // OK, he doesnt exist, just put him in the first available spot
-    for(int i = 0; i < WORLD_SIZE; i++) {
-        for(int j = 0; j < WORLD_SIZE; j++) {
+    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
+        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == 0) {
                 printf("[%lu] Player (%d) placed at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
                 WorldMap[i][j] = UserId;
@@ -96,8 +96,8 @@ void World_RequestState(char* Buffer, size_t* Size)
     Header.Type = DIRECTION_ACK;
     Header.Length = sizeof(ASP_DIRECTION_ACK_PACKET);
 
-    for(int i = 0; i < WORLD_SIZE; i++) {
-        for(int j = 0; j < WORLD_SIZE; j++) {
+    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
+        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] != 0) {
                 Data.x = i;
                 Data.y = j;
@@ -114,8 +114,8 @@ void World_RequestState(char* Buffer, size_t* Size)
 static bool World_FindPlayer(uint32_t UserId, int* x, int* y)
 {
     // TODO: more efficient algorithm
-    for(int i = 0; i < WORLD_SIZE; i++) {
-        for(int j = 0; j < WORLD_SIZE; j++) {
+    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
+        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
                 *x = i;
                 *y = j;
