@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <GL/freeglut.h>
+#include <GL/glut.h>
 
 #include "common_include.h"
 
