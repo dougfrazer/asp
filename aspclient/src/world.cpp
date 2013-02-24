@@ -13,6 +13,7 @@
 #include <GL/glut.h>
 
 #include "includes/common_include.h"
+#include "includes/math.h"
 
 #include "keyboard.h"
 #include "world.h"
@@ -177,6 +178,8 @@ bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t
     }
     if(WorldMap[Destination.x][Destination.y] == 0 ) {
         // noone is there
+		WorldMap[CurrentPosition.x][CurrentPosition.y] = 0;
+		WorldMap[Destination.x][Destination.y] = UserId;
         *x = Destination.x;
         *y = Destination.y;
         return true;

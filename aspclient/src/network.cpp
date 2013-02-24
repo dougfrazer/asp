@@ -181,8 +181,8 @@ void Network_Update(float DeltaTime)
     ssize_t len = 0;
     //Network_SendTestPacket();
     do {
-    Network_Read(buffer, sizeof(buffer), &len);    
-    if(len > 0) Network_ProcessPackets(buffer, len);
+		Network_Read(buffer, sizeof(buffer), &len);    
+		if(len > 0) Network_ProcessPackets(buffer, len);
     } while( len > 0);
 }
 // *****************************************************************************

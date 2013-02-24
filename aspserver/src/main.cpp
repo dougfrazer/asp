@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <time.h>
+#include <math.h>
 #include <unistd.h>
 
 #include "includes/common_include.h"
@@ -32,29 +33,32 @@ static void Main_Deinit();
 //*******************************************************************************
 // Public Interface
 //*******************************************************************************
+#define SET_FRAME_TIME 1.0/60.0
 int main()
 {
-    time_t PreviousClock = clock();
-    struct timespec req, res;
-    req.tv_sec = 0;
-    req.tv_nsec = 500000;
+    struct timespec SleepReq, SleepRes;
+	//struct timespec DeltaPrevious, DeltaCurrent;
 
+    SleepReq.tv_sec = 0;
+    SleepReq.tv_nsec = (SET_FRAME_TIME)*(1000)*(1000)*(1000);
+
+	//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaPrevious);
     Main_Init();
     
     // TODO: have a listening thread?
     while(true) {
-        clock_t CurrentClock = clock();
-        float DeltaTime = ((float)CurrentClock - (float)PreviousClock)/CLOCKS_PER_SEC;
-        PreviousClock = CurrentClock;
+		//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaCurrent);
+        //DeltaPrevious = DeltaCurrent;
         
-        Main_Update(DeltaTime);
-        nanosleep(&req, &res);
+        Main_Update(SET_FRAME_TIME);
+        nanosleep(&SleepReq, &SleepRes);
     }
     
     Main_Deinit();
     
     return EXIT_SUCCESS;
 }
+//*******************************************************************************
 
 //*******************************************************************************
 // Private Interface

@@ -17,6 +17,7 @@
 
 #include "includes/asppacket.h"
 #include "includes/common_include.h"
+#include "includes/math.h"
 #include "world.h"
 
 static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
@@ -67,14 +68,8 @@ bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 void World_SetInitialPosition(uint32_t UserId)
 {
     // See if he is for some reason already in our world
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
-            if(WorldMap[i][j] == UserId) {
-                printf("[%lu] Player (%d) found at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
-                return;
-            }
-        }
-    }
+	int x, y;
+	if(World_FindPlayer(UserId, &x,&y)) return;
 
     // OK, he doesnt exist, just put him in the first available spot
     for(uint32_t i = 0; i < WORLD_SIZE; i++) {

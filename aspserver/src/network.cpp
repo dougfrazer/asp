@@ -61,11 +61,13 @@ void NETWORK::Init()
     // establish the socket
     sockfd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
     if(errno != EOK || sockfd <= 0) {
+		printf("Failed to create socket\n");
         exit(EXIT_FAILURE);
     }
     
     // bind the socket
     if(bind(sockfd, (struct sockaddr*)&Server, sizeof(Server)) != EOK) {
+		printf("Failed to bind socket\n");
         exit(EXIT_FAILURE);
     }
     
