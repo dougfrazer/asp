@@ -21,6 +21,7 @@
 static void World_Reshape(int width, int height);
 static void World_Idle();
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
+static void World_PrintWorld();
 
 static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
 
@@ -134,6 +135,7 @@ void World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 
     // write his current location
     WorldMap[x][y] = UserId;
+//	World_PrintWorld();
 }
 // *****************************************************************************
 bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId, uint32_t* x, uint32_t *y)
@@ -216,3 +218,15 @@ static void World_PrintText(float x, float y, void* font, char* text, float r, f
     if(!blending) glDisable(GL_BLEND);
 }
 // ******************************************************************************
+static void World_PrintWorld()
+{
+    for(uint32_t x=0; x < WORLD_SIZE; x++){
+		printf("[ ");
+        for(uint32_t y=0; y < WORLD_SIZE; y++){
+			printf("%d ", WorldMap[x][y]);
+		}
+		printf("]\n");
+
+	}
+}
+

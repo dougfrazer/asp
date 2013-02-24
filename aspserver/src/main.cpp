@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <pthread.h>
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
@@ -39,7 +38,7 @@ int main()
     struct timespec SleepReq, SleepRes;
 	//struct timespec DeltaPrevious, DeltaCurrent;
 
-    SleepReq.tv_sec = 0;
+    SleepReq.tv_sec = 1;
     SleepReq.tv_nsec = (SET_FRAME_TIME)*(1000)*(1000)*(1000);
 
 	//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaPrevious);
@@ -50,7 +49,7 @@ int main()
 		//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaCurrent);
         //DeltaPrevious = DeltaCurrent;
         
-        Main_Update(SET_FRAME_TIME);
+        Main_Update(1 + SET_FRAME_TIME);
         nanosleep(&SleepReq, &SleepRes);
     }
     

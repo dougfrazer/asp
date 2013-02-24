@@ -96,30 +96,32 @@ void NETWORK::Update(float DeltaTime)
     }
 
     // see if we got any data
-    len = recvfrom(sockfd, RecvBuffer, sizeof(RecvBuffer), 0, (struct sockaddr*)&ClientAddr, &socksize);
-    if(len == 0) {
-        return;
-    } else if(len == -1) {
-        if(errno != EAGAIN) {
-            printf("Error recieving on main socket %d (%s)\n", errno, strerror(errno));
-        }
-        return;
-    }
+	do {
+		len = recvfrom(sockfd, RecvBuffer, sizeof(RecvBuffer), 0, (struct sockaddr*)&ClientAddr, &socksize);
+		if(len == 0) {
+			return;
+		} else if(len == -1) {
+			if(errno != EAGAIN) {
+				printf("Error recieving on main socket %d (%s)\n", errno, strerror(errno));
+			}
+			return;
+		}
 
-    // Lookup who this data belongs to
-    Key.Address = ClientAddr.sin_addr;
-    Key.Port = ClientAddr.sin_port;
-    MapIterator Found = HashMap.find(Key);
-    if(Found != HashMap.end()) {
-        printf("Incoming packet for %s (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), len);
-        Found->second->ProcessData(RecvBuffer, len); 
-    } else {
-        printf("New connection from %s:%d (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), ClientAddr.sin_port, len);
-        CLIENT* Client = new CLIENT((struct sockaddr*)&ClientAddr, socksize);
-        HashMap.insert( { Key, Client } );
-        ClientList.push_front( Client );
-        Client->ProcessData(RecvBuffer, len);
-    }
+		// Lookup who this data belongs to
+		Key.Address = ClientAddr.sin_addr;
+		Key.Port = ClientAddr.sin_port;
+		MapIterator Found = HashMap.find(Key);
+		if(Found != HashMap.end()) {
+			printf("Incoming packet for %s (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), len);
+			Found->second->ProcessData(RecvBuffer, len); 
+		} else {
+			printf("New connection from %s:%d (%ld bytes)\n", inet_ntoa(ClientAddr.sin_addr), ClientAddr.sin_port, len);
+			CLIENT* Client = new CLIENT((struct sockaddr*)&ClientAddr, socksize);
+			HashMap.insert( { Key, Client } );
+			ClientList.push_front( Client );
+			Client->ProcessData(RecvBuffer, len);
+		}
+	} while(len > 0);
 
 }
 //*******************************************************************************
