@@ -4,3 +4,10 @@ aspserver/aspserver/*.gch
 aspserver/aspserver/old/
 aspserver/aspserver/*.swp
 aspclient/aspclient/*.swp
+aclocal.m4
+aspclient/src/.deps/
+aspserver/src/.deps/
+aspclient/src/.dirstamp
+config.log
+config.status
+autom4te.cache/
