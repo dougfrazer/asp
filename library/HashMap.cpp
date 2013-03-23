@@ -9,11 +9,10 @@
 //*****************************************************************************
 
 #include "HashMap.h"
+#include "ASPLib.h"
 
 #include "assert.h"
-#include "string.h"
 
-#define error(...) assert(false)
 
 //*****************************************************************************
 // Constructor/Destructor
@@ -45,7 +44,7 @@ void HASH_MAP::Init()
 	Buckets = (BUCKET**)AllocFn(NumBuckets*sizeof(BUCKET*));
 	if(Buckets == NULL) return;
 
-	memset(Buckets, 0, NumBuckets * sizeof(BUCKET*));
+	Memset(Buckets, 0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
 void HASH_MAP::Deinit()
@@ -63,7 +62,7 @@ void HASH_MAP::Deinit()
 		}
 	}
 	FreeFn(Buckets);
-	memset(Buckets, 0, NumBuckets * sizeof(BUCKET*));
+	Memset(Buckets, 0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
 bool HASH_MAP::Insert(void* key, void* val)
@@ -171,7 +170,7 @@ bool HASH_MAP::Resize(unsigned int NewNumBuckets)
         error("Failed to alloc new space for resizing");
         return false;
     }
-    memset(NewBuckets, 0, NewNumBuckets*sizeof(BUCKET*));
+    Memset(NewBuckets, 0, NewNumBuckets*sizeof(BUCKET*));
 
     OldBuckets = Buckets;
     OldNumBuckets = NumBuckets;
