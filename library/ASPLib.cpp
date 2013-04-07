@@ -19,9 +19,9 @@ void Memcpy(void* dest, const void* src, size_t size)
     }
 
     // Do large copies (8 bytes at a time)
-    Dest2 = (unsigned long int*)Dest;
-    Src2 = (unsigned long int*)Src;
-    DestEnd2 = (unsigned long int*)aligndown(dest + size, 8);
+    Dest2 = (u64*)Dest;
+    Src2 = (u64*)Src;
+    DestEnd2 = (u64*)aligndown(dest + size, 8);
     while(Dest2 < DestEnd2) {
         *Dest2++ = *Src2++;
     }
@@ -29,7 +29,7 @@ void Memcpy(void* dest, const void* src, size_t size)
     // Finish it up (anything on the tail end thats not 8-byte aligned)
     Dest = (char*)Dest2;
     Src = (char*)Src2;
-    DestEnd = (char*)DestEnd2;
+    DestEnd = (char*)dest + size;
     while(Dest < DestEnd) {
         *Dest++ = *Src++;
     }
