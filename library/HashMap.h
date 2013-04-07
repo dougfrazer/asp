@@ -12,17 +12,13 @@
 //    The length of the data referenced by keys when inserted.  Note
 //    the void* passed in for Insert() will be dereferenced and KeyLen
 //    bytes will be read and hashed.
-// Buffer:
-//    Pre-allocated space for which to use for this hash map.
-// Size:
-//    Size of the buffer.
+// AllocFn:
+//    A function that can be used to alloc memory.
+// FreeFn:
+//    A function that can be used to free the memory alloced in AllocFn.
 // LoadFactor:
 //    Load factor is defined as Size/NumBuckets.  This argument specifies
 //    when we will rehash, when our current LoadFactor exceeds this value.
-// Hash:
-//    If you have some need for a custom hash function, it can be passed
-//    in here.  Note that the default hash function provided is a widely
-//    used, quick, and uniform hash function and should serve most needs.
 //
 // (c) March 2013
 //
