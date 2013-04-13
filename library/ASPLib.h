@@ -6,6 +6,7 @@
 //*****************************************************************************
 
 #include "stdint.h"
+#include "assert.h"
 
 typedef unsigned long int uint64;
 typedef unsigned int uint;
@@ -15,6 +16,7 @@ typedef uint16_t u16;
 typedef uint8_t  u8;
 typedef long unsigned int size_t;
 
+#define null            0
 #define countof(x)      sizeof(x)/sizeof(*x)
 #define error(...)      assert(false)
 #define alignup(p, i)   ( ((uint64)p + i - 1) & ~(i - 1) )
