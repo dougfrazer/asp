@@ -66,7 +66,7 @@ void Memset(void* dest, u8 val, size_t size)
 uint Log2(unsigned int _val)
 {
     // GCC built-in function (bsr - bitscanreverse)
-    return sizeof(_val)*8 - __builtin_clz(_val);
+    return bitcountof(_val) - __builtin_clz(_val);
 }
 //*****************************************************************************
 const u32 StringHash(const char* String)

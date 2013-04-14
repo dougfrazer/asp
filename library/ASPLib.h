@@ -24,8 +24,8 @@ typedef long unsigned int size_t;
 #define countof(x)        sizeof(x)/sizeof(*x)
 #define error(...)        assert(false)
 #define bitcountof(x)     sizeof(x)*8
-#define alignup(p, i)     ( ((uint64)p + i - 1) & ~(i - 1) )
-#define aligndown(p, i)   ( ((uint64)p - i + 1) & ~(i - 1) )
+#define alignup(p, i)     ( ((uintptr_t)p + i - 1) & ~(i - 1) )
+#define aligndown(p, i)   ( ((uintptr_t)p - i + 1) & ~(i - 1) )
 #define rotate_left(x, r) ( (x << r) | (x >> (bitcountof(x) - r)) )
 
 // TODO: Use restrict keyword? Or just assert?
