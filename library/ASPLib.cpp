@@ -1,6 +1,16 @@
+//*****************************************************************************
+// ASPLib
+// ------
+//   A collection of simple library functions
+//
+// (c) April 2013
+// @author Doug Frazer
+//*****************************************************************************
+
 #include "ASPLib.h"
+#include "MurmurHash.h"
 
-
+//*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)
 {
     char* Dest;
@@ -34,7 +44,7 @@ void Memcpy(void* dest, const void* src, size_t size)
         *Dest++ = *Src++;
     }
 }
-
+//*****************************************************************************
 void Memset(void* dest, char val, size_t size)
 {
     char* Dest = (char*)dest;
@@ -43,19 +53,28 @@ void Memset(void* dest, char val, size_t size)
         *Dest++ = val;
     }
 }
-
-void Memset(void* dest, unsigned int val, size_t size)
+//*****************************************************************************
+void Memset(void* dest, u8 val, size_t size)
 {
     char* Dest = (char*)dest;
     char* DestEnd = &Dest[size];
     while(Dest < DestEnd) {
-        *Dest++ = val & 0xFF;
+        *Dest++ = val;
     }
 }
-
-unsigned int Log2(unsigned int _val)
+//*****************************************************************************
+uint Log2(unsigned int _val)
 {
     // GCC built-in function (bsr - bitscanreverse)
     return sizeof(_val)*8 - __builtin_clz(_val);
 }
-
+//*****************************************************************************
+const u32 StringHash(const char* String)
+{
+    uint len = 0;
+    while(String[len] != '\0') {
+        len++;
+    }
+    return MurmurHash(String, len);
+}
+//*****************************************************************************

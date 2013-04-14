@@ -25,8 +25,7 @@
 // @author Doug Frazer
 //*****************************************************************************
 
-#include "stdint.h"
-#include "stddef.h"
+#include "ASPLib.h"
 
 typedef void* (HashMap_AllocFn)(size_t Size);
 typedef void  (HashMap_FreeFn)(void* ptr);
@@ -34,8 +33,8 @@ typedef void  (HashMap_FreeFn)(void* ptr);
 class HASH_MAP
 {
 public:
-	HASH_MAP(unsigned int     _NumBuckets, 
-             unsigned int     _KeyLen, 
+	HASH_MAP(uint             _NumBuckets, 
+             uint             _KeyLen, 
              HashMap_AllocFn* _AllocFn, 
              HashMap_FreeFn*  _FreeFn, 
              float            _LoadFactor = DEFAULT_LOAD_FACTOR);
@@ -51,27 +50,24 @@ public:
 
 private:
 	struct BUCKET {
-		unsigned int hash;
-		void*        val;
-		BUCKET*      next;
+		u32     hash;
+		void*   val;
+		BUCKET* next;
 	};
 
-	BUCKET**       Buckets;
-	unsigned int   NumBuckets;
-	unsigned int   KeyLen;
+	BUCKET**  Buckets;
+	uint      NumBuckets;
+	uint      KeyLen;
 
-	unsigned int   Size;
-	float          LoadFactor;
+	uint    Size;
+	float   LoadFactor;
 
     HashMap_AllocFn* AllocFn;
     HashMap_FreeFn*  FreeFn;
 
-private: // default hash function
-	static unsigned int MurmurHash(const void * Key, const unsigned int KeyLen);
-
 private:
 	static const float DEFAULT_LOAD_FACTOR = 1.0;
-	BUCKET** FindInternal(unsigned int Hash, BUCKET** Prev = NULL);
-	bool InsertInternal(unsigned int Hash, void* key);
-	bool Resize(unsigned int NewNumBuckets);
+	BUCKET** FindInternal(uint Hash, BUCKET** Prev = null);
+	bool InsertInternal(uint Hash, void* key);
+	bool Resize(uint NewNumBuckets);
 };

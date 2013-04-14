@@ -26,9 +26,14 @@ public:
 
     virtual u32 GetId() = 0;
     virtual u32 GetSize() = 0;
-private:
+
     PACKET_HANDLER* Left;
     PACKET_HANDLER* Right;
+
+    PACKET_HANDLER* Next;
+    PACKET_HANDLER* Prev;
 };
 
 PACKET_HANDLER* PacketHandler_GetHandler(u32 Id);
+PACKET_HANDLER* PacketHandler_GetFirst();
+PACKET_HANDLER* PacketHandler_GetNext(PACKET_HANDLER* Handler);

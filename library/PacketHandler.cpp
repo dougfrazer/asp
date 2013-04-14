@@ -12,12 +12,24 @@
 #include "PacketHandler.h"
 
 static PACKET_HANDLER* HandlerTree = null;
+static PACKET_HANDLER* HandlerList = null;
 
 //*****************************************************************************
 PACKET_HANDLER::PACKET_HANDLER()
 {
     Left = null;
     Right = null;
+
+    if(HandlerList == null) {
+        HandlerList = this;
+        HandlerList->Prev = this;
+        HandlerList->Next = this;
+    } else {
+        this->Next = HandlerList;
+        this->Prev = HandlerList->Prev;
+        HandlerList->Prev->Next = this;
+        HandlerList->Prev = this;
+    }
 }
 //*****************************************************************************
 void PACKET_HANDLER::Register()
@@ -52,5 +64,14 @@ PACKET_HANDLER* PACKET_HANDLER::FindHandler(u32 Id)
 {
     PACKET_HANDLER** Handler = FindHandlerLocation(Id);
     return Handler == null ? null : *Handler;
+}
+//*****************************************************************************
+PACKET_HANDLER* PacketHandler_GetFirst()
+{
+    return HandlerList;
+}
+//*****************************************************************************
+PACKET_HANDLER* PacketHandler_GetNext(PACKET_HANDLER* Handler) {
+    return Handler->Next == HandlerList ? null : Handler->Next; 
 }
 //*****************************************************************************

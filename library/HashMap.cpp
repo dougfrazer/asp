@@ -10,15 +10,14 @@
 
 #include "HashMap.h"
 #include "ASPLib.h"
-
-#include "assert.h"
+#include "MurmurHash.h"
 
 
 //*****************************************************************************
 // Constructor/Destructor
 //*****************************************************************************
-HASH_MAP::HASH_MAP(unsigned int      _NumBuckets, 
-                   unsigned int      _KeyLen, 
+HASH_MAP::HASH_MAP(uint      _NumBuckets, 
+                   uint      _KeyLen, 
                    HashMap_AllocFn*  _AllocFn, 
                    HashMap_FreeFn*   _FreeFn, 
                    float             _LoadFactor)
@@ -42,9 +41,9 @@ HASH_MAP::~HASH_MAP()
 void HASH_MAP::Init()
 {
     Buckets = (BUCKET**)AllocFn(NumBuckets*sizeof(BUCKET*));
-    if(Buckets == NULL) return;
+    if(Buckets == null) return;
 
-    Memset(Buckets, (unsigned int)0, NumBuckets * sizeof(BUCKET*));
+    Memset(Buckets, (u8)0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
 void HASH_MAP::Deinit()
@@ -52,17 +51,17 @@ void HASH_MAP::Deinit()
     BUCKET* Bucket;
     BUCKET* NextBucket;
 
-    if(Buckets == NULL) return;
-    for(unsigned int i = 0; i < NumBuckets; i++) {
+    if(Buckets == null) return;
+    for(uint i = 0; i < NumBuckets; i++) {
         Bucket = Buckets[i];
-        while(Bucket != NULL) {
+        while(Bucket != null) {
             NextBucket = Bucket->next;
             FreeFn(Bucket);
             Bucket = NextBucket;
         }
     }
     FreeFn(Buckets);
-    Memset(Buckets, (unsigned int)0, NumBuckets * sizeof(BUCKET*));
+    Memset(Buckets, (u8)0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
 bool HASH_MAP::Insert(void* key, void* val)
@@ -76,11 +75,11 @@ bool HASH_MAP::Remove(void* key)
     BUCKET*  Removed;
 
     Bucket = FindInternal(MurmurHash(key, KeyLen));
-    if(Bucket == NULL) {
+    if(Bucket == null) {
         error("Out of memory");
         return false;
     }
-    if(*Bucket == NULL) {
+    if(*Bucket == null) {
         error("Tried to remove a value that doesn't exist");
         return false;
     }
@@ -98,7 +97,7 @@ void* HASH_MAP::GetValue(void* key)
 
     Bucket = FindInternal(MurmurHash(key, KeyLen));
 
-    return Bucket == NULL ? NULL : *Bucket == NULL ? NULL : (*Bucket)->val;
+    return Bucket == null ? null : *Bucket == null ? null : (*Bucket)->val;
 }
 //*****************************************************************************
 
@@ -106,47 +105,47 @@ void* HASH_MAP::GetValue(void* key)
 //*****************************************************************************
 // Private Interface
 //*****************************************************************************
-HASH_MAP::BUCKET** HASH_MAP::FindInternal(uint32_t Hash, BUCKET** Prev)
+HASH_MAP::BUCKET** HASH_MAP::FindInternal(u32 Hash, BUCKET** Prev)
 {
-    unsigned int Index;
+    uint Index;
     BUCKET**     Iter;
 
-    if(Buckets == NULL) return NULL;
+    if(Buckets == null) return null;
 
     Index = Hash % NumBuckets;
     Iter = &Buckets[Index];
-    if(Prev != NULL) *Prev = NULL;
+    if(Prev != null) *Prev = null;
 
-    while(*Iter != NULL) {
+    while(*Iter != null) {
         if((*Iter)->hash == Hash) return Iter;
-        if(Prev != NULL) *Prev = *Iter;
+        if(Prev != null) *Prev = *Iter;
         Iter = &(*Iter)->next;
     }
     return Iter;
 }
 //*****************************************************************************
-bool HASH_MAP::InsertInternal(uint32_t Hash, void* val)
+bool HASH_MAP::InsertInternal(u32 Hash, void* val)
 {
     BUCKET*  Prev;
     BUCKET** Bucket;
 
     Bucket = FindInternal(Hash, &Prev);
-    if(Bucket == NULL) {
+    if(Bucket == null) {
         error("Out of memory");
         return false;
     }
-    if(*Bucket != NULL) {
+    if(*Bucket != null) {
         error("Key already exists in map (or another key hashed to same value)");
         return false;
     }
     *Bucket = (BUCKET*)AllocFn(sizeof(BUCKET));
-    if(*Bucket == NULL) {
+    if(*Bucket == null) {
         return false;
     }
     (*Bucket)->hash = Hash;
     (*Bucket)->val = val;
-    (*Bucket)->next = NULL;
-    if(Prev != NULL) Prev->next = *Bucket;
+    (*Bucket)->next = null;
+    if(Prev != null) Prev->next = *Bucket;
     Size++;
 
     if(Size/(float)NumBuckets >= LoadFactor) {
@@ -157,20 +156,20 @@ bool HASH_MAP::InsertInternal(uint32_t Hash, void* val)
     return true;
 }
 //*****************************************************************************
-bool HASH_MAP::Resize(unsigned int NewNumBuckets)
+bool HASH_MAP::Resize(uint NewNumBuckets)
 {
     BUCKET** NewBuckets;
     BUCKET** OldBuckets;
     BUCKET*  Bucket;
     BUCKET*  NextBucket;
-    unsigned int     OldNumBuckets;
+    uint     OldNumBuckets;
 
     NewBuckets = (BUCKET**)AllocFn(NewNumBuckets*sizeof(BUCKET*));
-    if(NewBuckets == NULL) {
+    if(NewBuckets == null) {
         error("Failed to alloc new space for resizing");
         return false;
     }
-    Memset(NewBuckets, (unsigned int)0, NewNumBuckets*sizeof(BUCKET*));
+    Memset(NewBuckets, (u8)0, NewNumBuckets*sizeof(BUCKET*));
 
     OldBuckets = Buckets;
     OldNumBuckets = NumBuckets;
@@ -178,9 +177,9 @@ bool HASH_MAP::Resize(unsigned int NewNumBuckets)
     Buckets = NewBuckets;
     NumBuckets = NewNumBuckets;
     Size = 0;
-    for(unsigned int i = 0; i < OldNumBuckets; i++) {
+    for(uint i = 0; i < OldNumBuckets; i++) {
         Bucket = OldBuckets[i];
-        while(Bucket != NULL) {
+        while(Bucket != null) {
             NextBucket = Bucket->next;
             if(!InsertInternal(Bucket->hash, Bucket->val)) {
                 error("Failed to insert bucket");
@@ -192,82 +191,5 @@ bool HASH_MAP::Resize(unsigned int NewNumBuckets)
     }
     FreeFn(OldBuckets);
     return true;
-}
-//*****************************************************************************
-
-//*****************************************************************************
-// Default Hash Function: Murmur Hash
-//
-// See http://code.google.com/p/smhasher/wiki/MurmurHash3
-//*****************************************************************************
-
-//*****************************************************************************
-// Definitions
-//*****************************************************************************
-inline uint32_t rotl32 ( uint32_t x, int r ) { return (x << r) | (x >> (32 - r)); }
-inline uint32_t getblock ( const uint32_t * p, int i ) { return p[i]; }
-inline uint32_t fmix ( uint32_t h )
-{
-    h ^= h >> 16;
-    h *= 0x85ebca6b;
-    h ^= h >> 13;
-    h *= 0xc2b2ae35;
-    h ^= h >> 16;
-
-    return h;
-}
-//*****************************************************************************
-// Function
-//*****************************************************************************
-uint32_t HASH_MAP::MurmurHash(const void* key, const unsigned int len)
-{
-    const uint32_t seed    = 0xdeadbeef;
-    const uint8_t * data   = (const uint8_t*)key;
-    const int nblocks = len / 4;
-
-    uint32_t h1 = seed;
-
-    const uint32_t c1 = 0xcc9e2d51;
-    const uint32_t c2 = 0x1b873593;
-
-    //----------
-    // body
-
-    const uint32_t * blocks = (const uint32_t *)(data + nblocks*4);
-
-    for(int i = -nblocks; i < 0; i++)
-    {
-        uint32_t k1 = getblock(blocks,i);
-
-        k1 *= c1;
-        k1 = rotl32(k1,15);
-        k1 *= c2;
-
-        h1 ^= k1;
-        h1 = rotl32(h1,13);
-        h1 = h1*5+0xe6546b64;
-    }
-
-    //----------
-    // tail
-
-    const uint8_t * tail = (const uint8_t*)(data + nblocks*4);
-
-    uint32_t k1 = 0;
-
-    switch(len & 7)
-    {
-        case 3: k1 ^= tail[2] << 16;
-        case 2: k1 ^= tail[1] << 8;
-        case 1: k1 ^= tail[0];
-        k1 *= c1; k1 = rotl32(k1,15); k1 *= c2; h1 ^= k1;
-    };
-
-    //----------
-    // finalization
-
-    h1 ^= len;
-    h1 = fmix(h1);
-    return h1;
 }
 //*****************************************************************************
