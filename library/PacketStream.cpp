@@ -27,18 +27,22 @@ void PACKET_STREAM::AddPacket(PACKET_HANDLER* Packet, void* Buffer)
 //*****************************************************************************
 void PACKET_STREAM::RecievePackets(void* Buffer, size_t size)
 {
+    HEADER* Header = null;
     PACKET_HANDLER* Handler = null;
 
     while(size > 0) {
-        Handler = PACKET_HANDLER::FindHandler(((HEADER*)Buffer)->Id);
+        Header = (HEADER*)Buffer;
+        Handler = PACKET_HANDLER::FindHandler(Header->Id);
+        Buffer = Header + 1;
         size -= sizeof(HEADER);
-        Buffer += sizeof(HEADER);
         if(Handler == null) {
             error("Got a packet without a matching handler id=%d", Header->id);
+        } else {
+            Handler->Recieve(Buffer);
+            assert(Handler->GetSize() == Header->Size);
         }
-        Handler->Recieve(Buffer);
-        size -= Handler->GetSize();
-        Buffer += Handler->GetSize();
+        Buffer += Header->Size;
+        size -= Header->Size;
     }
     assert(size == 0);
 }
