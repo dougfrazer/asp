@@ -22,11 +22,11 @@ class PACKET_STREAM
 {
 public:
     PACKET_STREAM() {} 
-    ~PACKET_STREAM() {}
+    virtual ~PACKET_STREAM() {}
 public:
-    void RecievePackets(void* Buffer, size_t size);
+    void RecievePackets(void* Buffer, size_t size, void* Context);
     void AddPacket(PACKET_HANDLER* Packet, void* Buffer);
-private:
+    
     struct HEADER {
         u32 Id;
         u8  Size;

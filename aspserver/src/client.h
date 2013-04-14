@@ -10,6 +10,7 @@
 //*******************************************************************************
 
 #include <netinet/in.h>
+#include "PacketStream.h"
 
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
@@ -30,16 +31,7 @@ public:
     socklen_t AddressLength;
 
 private:
-    void HandleKeepalive();
-    void HandleDirection(ASP_DIRECTION_PACKET* Data);
-    void HandleLogin(ASP_LOGIN_PACKET* Data);
-    void QueuePacket(char* buffer, size_t size);
-
-private:
-    static const unsigned int TRANSMIT_SIZE = 1500;
-    static const unsigned int BUFFER_SIZE = 3000;
-    char SendBuffer[BUFFER_SIZE];
-    unsigned int SendBufferSize;
+    PACKET_STREAM Stream;
 };
 
 #endif

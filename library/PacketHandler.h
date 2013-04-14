@@ -9,6 +9,7 @@
 //*****************************************************************************
 
 #include "ASPLib.h"
+#include <netinet/in.h>
 
 class PACKET_HANDLER
 {
@@ -22,7 +23,7 @@ public:
     static PACKET_HANDLER** FindHandlerLocation(u32 Id);
     static PACKET_HANDLER*  FindHandler(u32 Id);
 
-    virtual void Recieve(void* Buffer) = 0;
+    virtual void Recieve(void* Buffer, void* Context) = 0;
 
     virtual u32 GetId() = 0;
     virtual u32 GetSize() = 0;

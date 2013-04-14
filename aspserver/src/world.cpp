@@ -16,6 +16,7 @@
 #include <pthread.h>
 
 #include "includes/asppacket.h"
+#include "ASPLib.h"
 #include "includes/common_include.h"
 #include "includes/math.h"
 #include "world.h"
@@ -32,7 +33,7 @@ static bool World_FindPlayer(uint32_t UserId, int* x, int* y);
 //*******************************************************************************
 void World_Init()
 {
-    zero(&WorldMap);
+    Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
 void World_Update()
@@ -42,7 +43,7 @@ void World_Update()
 //*******************************************************************************
 void World_Deinit()
 {
-    zero(&WorldMap);
+    Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
 bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)

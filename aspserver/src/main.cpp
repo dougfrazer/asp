@@ -32,24 +32,19 @@ static void Main_Deinit();
 //*******************************************************************************
 // Public Interface
 //*******************************************************************************
-#define SET_FRAME_TIME 1.0/60.0
+#define SET_UPDATE_TIME 1.0/60.0
 int main()
 {
     struct timespec SleepReq, SleepRes;
-	//struct timespec DeltaPrevious, DeltaCurrent;
 
     SleepReq.tv_sec = 0;
-    SleepReq.tv_nsec = (SET_FRAME_TIME)*(1000)*(1000)*(1000);
-
-	//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaPrevious);
+    SleepReq.tv_nsec = (SET_UPDATE_TIME)*(1000)*(1000)*(1000);
+    
     Main_Init();
     
-    // TODO: have a listening thread?
+    // TODO: threads
     while(true) {
-		//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &DeltaCurrent);
-        //DeltaPrevious = DeltaCurrent;
-        
-        Main_Update(SET_FRAME_TIME);
+        Main_Update(SET_UPDATE_TIME);
         nanosleep(&SleepReq, &SleepRes);
     }
     

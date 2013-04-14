@@ -20,20 +20,23 @@ typedef uint16_t u16;
 typedef uint8_t  u8;
 typedef long unsigned int size_t;
 
-#define null              0
-#define countof(x)        sizeof(x)/sizeof(*x)
-#define error(...)        assert(false)
-#define bitcountof(x)     sizeof(x)*8
-#define alignup(p, i)     ( ((uintptr_t)p + i - 1) & ~(i - 1) )
-#define aligndown(p, i)   ( ((uintptr_t)p - i + 1) & ~(i - 1) )
-#define rotate_left(x, r) ( (x << r) | (x >> (bitcountof(x) - r)) )
+#define null               0
+#define countof(x)         sizeof(x)/sizeof(*x)
+#define error(...)         assert(false)
+#define bitcountof(x)      sizeof(x)*8
+#define alignup(p, i)      ( ((uintptr_t)p + i - 1) & ~(i - 1) )
+#define aligndown(p, i)    ( ((uintptr_t)p - i + 1) & ~(i - 1) )
+#define rotate_left(x, r)  ( (x << r) | (x >> (bitcountof(x) - r)) )
+#define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
+#define min(x,y)           ( x < y ? x : y )
+#define max(x,y)           ( x > y ? x : y )
 
 // TODO: Use restrict keyword? Or just assert?
 // TODO: memmove
 void Memcpy(void* dest, const void* src, size_t size);
 
 void Memset(void* dest, char val, size_t size);
-void Memset(void* dest, u8 val, size_t size); 
+void Memset(void* dest, u8 val, size_t size);
 
 uint Log2(uint _val);
 

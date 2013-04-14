@@ -25,7 +25,7 @@ void PACKET_STREAM::AddPacket(PACKET_HANDLER* Packet, void* Buffer)
     DataOffset += Header.Size;
 }
 //*****************************************************************************
-void PACKET_STREAM::RecievePackets(void* Buffer, size_t size)
+void PACKET_STREAM::RecievePackets(void* Buffer, size_t size, void* Context)
 {
     HEADER* Header = null;
     PACKET_HANDLER* Handler = null;
@@ -38,10 +38,10 @@ void PACKET_STREAM::RecievePackets(void* Buffer, size_t size)
         if(Handler == null) {
             error("Got a packet without a matching handler id=%d", Header->id);
         } else {
-            Handler->Recieve(Buffer);
+            Handler->Recieve(Buffer, Context);
             assert(Handler->GetSize() == Header->Size);
         }
-        Buffer += Header->Size;
+        Buffer = (u8*)Buffer + Header->Size;
         size -= Header->Size;
     }
     assert(size == 0);
