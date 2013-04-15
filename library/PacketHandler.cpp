@@ -38,7 +38,7 @@ void PACKET_HANDLER::Register()
     PACKET_HANDLER** Node = FindHandlerLocation(GetId());
     if(Node == null) {
         HandlerTree = this;
-    } else if(*Node == null) {
+    } else if(*Node != null) {
         error("Another packet already has this identifier");
         return;
     } else {

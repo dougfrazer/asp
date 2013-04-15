@@ -15,13 +15,16 @@
 // @author Doug Frazer
 //*****************************************************************************
 
+#ifndef __PACKET_STREAM_H__
+#define __PACKET_STREAM_H__
+
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
 class PACKET_STREAM
 {
 public:
-    PACKET_STREAM() {} 
+    PACKET_STREAM() { DataOffset = 0; } 
     virtual ~PACKET_STREAM() {}
 public:
     void RecievePackets(void* Buffer, size_t size, void* Context);
@@ -34,3 +37,5 @@ public:
     uint DataOffset;
     char Data[1500];
 };
+
+#endif
