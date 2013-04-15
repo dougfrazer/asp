@@ -24,7 +24,7 @@ void Memcpy(void* dest, const void* src, size_t size)
     Dest = (char*)dest;
     Src = (char*)src;
     DestEnd = (char*)alignup(dest, 8);
-    while(dest < DestEnd) {
+    while(Dest < DestEnd) {
         *Dest++ = *Src++;
     }
 
