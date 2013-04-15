@@ -37,7 +37,6 @@ public:
     PACKET_HANDLER* Prev;
 };
 
-PACKET_HANDLER* PacketHandler_GetHandler(u32 Id);
 PACKET_HANDLER* PacketHandler_GetFirst();
 PACKET_HANDLER* PacketHandler_GetNext(PACKET_HANDLER* Handler);
 
