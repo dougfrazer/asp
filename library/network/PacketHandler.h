@@ -39,5 +39,6 @@ public:
 
 PACKET_HANDLER* PacketHandler_GetFirst();
 PACKET_HANDLER* PacketHandler_GetNext(PACKET_HANDLER* Handler);
+void            PacketHandler_RegisterAll();
 
 #endif

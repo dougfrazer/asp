@@ -65,9 +65,7 @@ int main()
     PACKET_HANDLER_TEST Test;
     PACKET_HANDLER_TEST_TWO Test2;
     DIRECTION_PACKET_HANDLER Direction;
-    Test.Register();
-    Test2.Register();
-    Direction.Register();
+    PacketHandler_RegisterAll();
 
     PACKET_STREAM Stream;
     PACKET_HANDLER_TEST::DATA Data;
@@ -96,5 +94,31 @@ int main()
     Data.AnotherValue = 0x6767;
     Data.MoreValues = 0x8989898989898989;
     Stream.AddPacket(&Test, &Data);
+
+    printf("First Stream:\n");
+    printf("-------------\n");
     Stream.RecievePackets(&Stream.Data[0], Stream.DataOffset, null);
+    Stream.DataOffset = 0; // not exactly how it will be used in production, because there will be a recieve buffer
+    printf("\n");
+    
+    printf("Second Stream:\n");
+    printf("-------------\n");
+    Stream.AddPacket(&Direction, &DirectionData);
+    Stream.RecievePackets(&Stream.Data[0], Stream.DataOffset, null);
+    Stream.DataOffset = 0;
+    printf("\n");
+
+    printf("Unregister test:\n");
+    printf("-------------\n");
+    Direction.Unregister();
+    Test.Unregister();
+    Direction.Register();
+    Test2.Unregister();
+    Test.Register();
+    Test2.Register();
+    Stream.AddPacket(&Direction, &DirectionData);
+    Stream.RecievePackets(&Stream.Data[0], Stream.DataOffset, null);
+    Stream.DataOffset = 0;
+    printf("\n");
+    
 }
