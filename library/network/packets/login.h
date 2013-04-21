@@ -10,7 +10,7 @@
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
-class LOGIN_PACKET_HANDLER : PACKET_HANDLER
+class LOGIN_PACKET_HANDLER : public PACKET_HANDLER
 {
 public:
     struct DATA {
@@ -21,5 +21,5 @@ public:
     u32 GetSize()   { return sizeof(DATA); }
     u32 GetId()     { return StringHash("LOGIN"); } // TODO: would be cool to do this at build time
 
-    virtual void Recieve(void* Buffer, void* Context) {}
+    virtual void Recieve(void* Buffer, void* Context);
 };
