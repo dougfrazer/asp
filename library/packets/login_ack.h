@@ -1,5 +1,5 @@
 //******************************************************************************
-// Login Packet
+// Login Ack Packet
 // ------------
 //   Handles login packets
 //
@@ -10,16 +10,21 @@
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
-class LOGIN_PACKET_HANDLER : PACKET_HANDLER
+class LOGIN_ACK_PACKET_HANDLER : PACKET_HANDLER
 {
 public:
     struct DATA {
         u32  UserId;
+        u32  Success     : 1;
+        u32  Error       : 15;
+        u32  Unused      : 16;
+        u32  x;
+        u32  y;
     };
 
-public:
     u32 GetSize()   { return sizeof(DATA); }
-    u32 GetId()     { return StringHash("LOGIN"); } // TODO: would be cool to do this at build time
+    u32 GetId()     { return StringHash("LOGIN_ACK"); } // TODO: would be cool to do this at build time
 
-    void Recieve(void* Buffer, void* Context);
+    virtual void Recieve(void* Buffer, void* Context) {}
 };
+

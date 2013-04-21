@@ -14,6 +14,6 @@ public:
     u32 GetSize()   { return 0; }
     u32 GetId()     { return StringHash("KEEPALIVE"); } // TODO: would be cool to do this at build time
 
-    void Recieve(void* Buffer, void* Context);
+    virtual void Recieve(void* Buffer, void* Context) {}
 };
 
