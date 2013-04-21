@@ -1,13 +1,16 @@
 //******************************************************************************
-// Keepalive Packet
+// Login Packet
+// ------------
+//   Handles login packets
 //
 // (c) April 2013
 // @author Doug Frazer
 //******************************************************************************
 
-#include "packets/keepalive.h"
+#include "network/packets/login.h"
 
-void KEEPALIVE_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
+void LOGIN_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
-    printf("Got a keepalive packet\n");
+    //printf("Got a login request");
 }
+

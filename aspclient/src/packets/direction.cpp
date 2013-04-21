@@ -7,24 +7,16 @@
 
 #include "packets/direction.h"
 
-#include "client.h"
 #include "world.h"
 
 void DIRECTION_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
     DATA* Data = (DATA*)Buffer;
-    CLIENT* Client = (CLIENT*)Context;
-    if(Data == null || Client == null) {
+    if(Data == null) {
         error("Got a null pointer in direction handler\n");
         return;
     }
 
-    if(Client->UserId != null) {
-        if(Client->UserId != Data->UserId) {
-            printf("Got a move command from userid=%d for userid=%d\n", Client->UserId, Data->UserId);
-        }
-        if(!World_SetPosition(Data->x, Data->y, Client->UserId)) {
-            printf("Error setting position for userid=%d\n", Client->UserId);
-        }
-    }
+//    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d]\n", Data->UserId, Data->x, Data->y);
+    World_SetPosition( Data->x, Data->y, Data->UserId );
 }

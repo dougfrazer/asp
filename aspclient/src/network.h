@@ -1,20 +1,23 @@
-//
-//  network.h
-//  aspclient
-//
-//  Created by Douglas Frazer on 1/3/13.
-//  Copyright 2013 Douglas Frazer. All rights reserved.
-//
+//*******************************************************************************
+// NETWORK
+//   Handles the main network connection, listens on the known server port/ip
+//   and dispatches messages
+//   
+// @author Doug Frazer
+// January 2013
+//*******************************************************************************
+
+#ifndef __NETWORK_H__
+#define __NETWORK_H__
 
 #include "includes/common_include.h"
-
-#ifndef aspclient_network_h
-#define aspclient_network_h
+#include "packets/login_ack.h"
 
 void Network_Init();
 void Network_Update(float DeltaTime);
 void Network_Deinit();
 
 void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude);
+void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data);
 
 #endif

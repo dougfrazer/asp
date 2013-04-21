@@ -7,6 +7,9 @@
 // @author Doug Frazer
 //******************************************************************************
 
+#ifndef __LOGIN_H__
+#define __LOGIN_H__
+
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
@@ -23,3 +26,5 @@ public:
 
     virtual void Recieve(void* Buffer, void* Context);
 };
+
+#endif

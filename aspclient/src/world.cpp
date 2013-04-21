@@ -14,6 +14,7 @@
 
 #include "includes/common_include.h"
 #include "includes/math.h"
+#include "ASPLib.h"
 
 #include "keyboard.h"
 #include "world.h"
@@ -23,7 +24,7 @@ static void World_Idle();
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
 static void World_PrintWorld();
 
-static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
+static u32 WorldMap[WORLD_SIZE][WORLD_SIZE];
 
 // *****************************************************************************
 void World_Init()
@@ -32,7 +33,7 @@ void World_Init()
     char *argv = NULL;
     glutInit(&argc, &argv);
 
-    zero(&WorldMap);
+    Memset(&WorldMap[0][0], (u8)0, sizeof(WorldMap));
     
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(1024, 768);
@@ -67,8 +68,8 @@ void World_Draw()
 
 
     // draw a bunch of squares
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
+    for(u32 i = 0; i < WORLD_SIZE; i++) {
+        for(u32 j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] != 0) {
                 glColor3f(0.0f, 1.0f, 0.0f);
             } else {
@@ -115,10 +116,10 @@ void World_Deinit()
     
 }
 // *****************************************************************************
-static uint32_t* World_FindUser(uint32_t UserId)
+static u32* World_FindUser(u32 UserId)
 {
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
+    for(u32 i = 0; i < WORLD_SIZE; i++) {
+        for(u32 j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
                 return &WorldMap[i][j];
             }
@@ -127,10 +128,10 @@ static uint32_t* World_FindUser(uint32_t UserId)
     return NULL;
 }
 // ****************************************************************************
-void World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
+void World_SetPosition(u32 x, u32 y, u32 UserId)
 {
     // set his previous location to zero
-    uint32_t* User = World_FindUser(UserId);
+    u32* User = World_FindUser(UserId);
     if(User != NULL) *User = 0;
 
     // write his current location
@@ -138,12 +139,12 @@ void World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
 //	World_PrintWorld();
 }
 // *****************************************************************************
-bool World_AttemptMovement(ASP_DIRECTION Direction, uint32_t Magnitude, uint32_t UserId, uint32_t* x, uint32_t *y)
+bool World_AttemptMovement(ASP_DIRECTION Direction, u32 Magnitude, u32 UserId, u32* x, u32 *y)
 {
   Position CurrentPosition = {0};
     bool PlayerFound=false;
-    for(uint32_t i=0; i < WORLD_SIZE; i++){
-        for(uint32_t j=0; j < WORLD_SIZE; j++){
+    for(u32 i=0; i < WORLD_SIZE; i++){
+        for(u32 j=0; j < WORLD_SIZE; j++){
             if(WorldMap[i][j] == UserId){
                 CurrentPosition.x = i;
                 CurrentPosition.y = j;
@@ -220,9 +221,9 @@ static void World_PrintText(float x, float y, void* font, char* text, float r, f
 // ******************************************************************************
 static void World_PrintWorld()
 {
-    for(uint32_t x=0; x < WORLD_SIZE; x++){
+    for(u32 x=0; x < WORLD_SIZE; x++){
 		printf("[ ");
-        for(uint32_t y=0; y < WORLD_SIZE; y++){
+        for(u32 y=0; y < WORLD_SIZE; y++){
 			printf("%d ", WorldMap[x][y]);
 		}
 		printf("]\n");

@@ -7,8 +7,8 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "login_packet.h"
-#include "login_ack_packet.h"
+#include "packets/login_packet.h"
+#include "packets/login_ack_packet.h"
 
 #include "client.h"
 #include "world.h"

@@ -21,6 +21,8 @@
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
+struct sockaddr;
+
 class PACKET_STREAM
 {
 public:
@@ -29,6 +31,8 @@ public:
 public:
     void RecievePackets(void* Buffer, size_t size, void* Context);
     void AddPacket(PACKET_HANDLER* Packet, void* Buffer);
+    void AddPacket(u32 Id, u8 Size, void* Buffer);
+    void Transmit(int sockfd, sockaddr* Address);
     
     struct HEADER {
         u32 Id;

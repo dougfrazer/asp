@@ -1,10 +1,9 @@
-//
-//  network.cpp
-//  aspclient
-//
-//  Created by Douglas Frazer on 1/3/13.
-//  Copyright 2013 Douglas Frazer. All rights reserved.
-//
+//*******************************************************************************
+// NETWORK
+//   
+// @author Doug Frazer
+// January 2013
+//*******************************************************************************
 
 #include <assert.h>
 #include <errno.h>
@@ -19,9 +18,13 @@
 
 #include "network.h"
 #include "includes/common_include.h"
-#include "includes/asppacket.h"
 #include "keyboard.h"
 #include "world.h"
+
+#include "network/PacketStream.h"
+
+#include "network/packets/login.h"
+#include "network/packets/direction.h"
 
 // TODO: get rid of static memory
 static struct {
@@ -30,56 +33,28 @@ static struct {
     socklen_t          DestinationLength;
     struct sockaddr_in RecievedFrom;
     socklen_t          RecievedFromLength;
-    uint32_t LoginId;
+    u32 LoginId;
     bool LoginConfirmed;
 } NetworkData;
+
+static PACKET_STREAM Stream;
 
 static void Network_SendBack()    { Network_SendDirectionPacket(SOUTH, 1); }
 static void Network_SendForward() { Network_SendDirectionPacket(NORTH, 1); }
 static void Network_SendLeft()    { Network_SendDirectionPacket(WEST,  1); }
 static void Network_SendRight()   { Network_SendDirectionPacket(EAST,  1); } 
+static void Network_Transmit();
 // *****************************************************************************
-static void Network_SendKeepaliveResponse()
+// *****************************************************************************
+static void Network_SendLoginRequest(u32 UserId)
 {
-    ASP_PACKET Packet;
-    Packet.Header.Type = KEEPALIVE;
-    Packet.Header.Length = 0; // no body
-
-    ssize_t size = sendto(NetworkData.sockfd,
-                            (void*)&Packet, 
-                            sizeof(Packet), 
-                            0, 
-                            (struct sockaddr*)&NetworkData.Destination, 
-                            sizeof(NetworkData.Destination));
-    assert(size > 0);
+    LOGIN_PACKET_HANDLER::DATA Data;
+    Data.UserId = UserId;
+    Stream.AddPacket(StringHash("LOGIN"), sizeof(Data), &Data);
+    Network_Transmit();
 }
 // *****************************************************************************
-static void Network_SendLoginRequest(uint32_t UserId)
-{
-    char Buffer[1024];
-    ASP_PACKET* Packet = (ASP_PACKET*)Buffer;
-    Packet->Header.Type = LOGIN;
-    Packet->Header.Length = sizeof(ASP_LOGIN_PACKET);
-
-    ASP_LOGIN_PACKET* LoginPacket = (ASP_LOGIN_PACKET*)&Packet->Body;
-    LoginPacket->UserId = UserId;
-
-    ssize_t size = sendto(NetworkData.sockfd, 
-                        (void*)&Buffer, 
-                        sizeof(ASP_HEADER) + sizeof(ASP_LOGIN_PACKET),
-                        0,
-                        (struct sockaddr*)&NetworkData.Destination,
-                        sizeof(NetworkData.Destination));
-    assert(size > 0);
-}
-// *****************************************************************************
-static void Network_ProcessDirectionAckPacket(ASP_DIRECTION_ACK_PACKET* Data)
-{
-    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d]\n", Data->UserId, Data->x, Data->y);
-    World_SetPosition( Data->x, Data->y, Data->UserId );
-}
-// *****************************************************************************
-static void Network_ProcessLoginAckPacket(ASP_LOGIN_ACK_PACKET* Data)
+void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
 {
     printf("Recieved a LOGIN_ACK Packet\n");
     if(Data->Success) {
@@ -93,18 +68,12 @@ static void Network_ProcessLoginAckPacket(ASP_LOGIN_ACK_PACKET* Data)
     }
 }
 // *****************************************************************************
-static void Network_ProcessKeepalivePacket()
-{
-    printf("Recieved a keepalive packet\n");
-    Network_SendKeepaliveResponse();
-}
-// *****************************************************************************
 void Network_Init()
 {
     NetworkData.sockfd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
     assert(NetworkData.sockfd > 0);
     
-    zero(&NetworkData.Destination);
+    Memset(&NetworkData.Destination, (u8)0, sizeof(NetworkData.Destination));
     NetworkData.Destination.sin_family = AF_INET;
     NetworkData.Destination.sin_addr.s_addr = inet_addr("127.0.0.1");
     NetworkData.Destination.sin_port = htons(PORTNUM);
@@ -115,6 +84,8 @@ void Network_Init()
     Keyboard_RegisterEvent('s', Network_SendBack);
     Keyboard_RegisterEvent('d', Network_SendRight);
     Keyboard_RegisterEvent('w', Network_SendForward);
+
+    PacketHandler_RegisterAll();
 }
 // *****************************************************************************
 static void Network_Read(char* buffer, int size, ssize_t* outlen)
@@ -134,42 +105,6 @@ static void Network_Read(char* buffer, int size, ssize_t* outlen)
     }
 }
 // *****************************************************************************
-static void Network_ProcessPackets(char* Data, long Size)
-{
-    ASP_PACKET* Packet = (ASP_PACKET*)(Data);
-    while(Size > 0) {
-        Size -= sizeof(ASP_HEADER) + Packet->Header.Length;
-        switch(Packet->Header.Type)
-        {
-            case KEEPALIVE:
-                {
-                    Network_ProcessKeepalivePacket();
-                    Packet = Packet + 1;
-                } break;
-            case LOGIN_ACK:
-                {
-                    ASP_LOGIN_ACK_PACKET* Data = (ASP_LOGIN_ACK_PACKET*)(Packet + 1);
-                    Network_ProcessLoginAckPacket(Data);
-                    Packet = (ASP_PACKET*)(Data + 1);
-                } break;
-            case DIRECTION_ACK:
-                {
-                    ASP_DIRECTION_ACK_PACKET* Data = (ASP_DIRECTION_ACK_PACKET*)(Packet + 1);
-                    Network_ProcessDirectionAckPacket(Data);
-                    Packet = (ASP_PACKET*)(Data + 1);
-                } break;
-            case NONE:
-            case LOGIN:
-            case DIRECTION:
-                printf("Error client sent a server-only packet type=%d\n", Packet->Header.Type);
-                return;
-            default:
-                break;
-        }
-    }
-    assert(Size == 0);
-}
-// *****************************************************************************
 void Network_Update(float DeltaTime)
 {
     if(NetworkData.LoginId == 0) {
@@ -182,7 +117,7 @@ void Network_Update(float DeltaTime)
     //Network_SendTestPacket();
     do {
 		Network_Read(buffer, sizeof(buffer), &len);    
-		if(len > 0) Network_ProcessPackets(buffer, len);
+		if(len > 0) Stream.RecievePackets(buffer, len, null);
     } while( len > 0);
 }
 // *****************************************************************************
@@ -194,28 +129,17 @@ void Network_Deinit()
 // *****************************************************************************
 void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude)
 {
-    uint32_t x, y;
-    char buffer[MAX_RECV_LEN];
+    DIRECTION_PACKET_HANDLER::DATA Data;
     
-    bool MoveSuccessful = World_AttemptMovement(direction, magnitude, NetworkData.LoginId, &x, &y);
+    bool MoveSuccessful = World_AttemptMovement(direction, magnitude, NetworkData.LoginId, &Data.x, &Data.y);
     if(!MoveSuccessful) return; // TODO: send it anyway?
 
-    ASP_PACKET* Packet = (ASP_PACKET*)&buffer;
-    ASP_DIRECTION_PACKET* DirectionalPacket = (ASP_DIRECTION_PACKET*)&Packet->Body;
-    Packet->Header.Type = DIRECTION;
-    Packet->Header.Length = sizeof(ASP_DIRECTION_PACKET);
-    DirectionalPacket->x = x;
-    DirectionalPacket->y = y;
-    
-    ssize_t size = sendto(NetworkData.sockfd, 
-                            buffer, 
-                            sizeof(ASP_HEADER) + sizeof(ASP_DIRECTION_PACKET), 
-                            0,
-                            (struct sockaddr*)&NetworkData.Destination, 
-                            sizeof(NetworkData.Destination));
-    if(size <= 0) {
-        printf("Error sending direction packet %d (%s) sockfd=%d\n", errno, strerror(errno), NetworkData.sockfd);
-    }
-    assert(size > 0);
+    Stream.AddPacket(StringHash("DIRECTION"), sizeof(Data), &Data);
+    Network_Transmit();
+}
+// *****************************************************************************
+static void Network_Transmit()
+{
+    Stream.Transmit(NetworkData.sockfd, (struct sockaddr*)&NetworkData.Destination);
 }
 // *****************************************************************************

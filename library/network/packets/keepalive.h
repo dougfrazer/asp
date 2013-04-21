@@ -5,6 +5,9 @@
 // @author Doug Frazer
 //******************************************************************************
 
+#ifndef __KEEPALIVE_H__
+#define __KEEPALIVE_H__
+
 #include "ASPLib.h"
 #include "PacketHandler.h"
 
@@ -17,3 +20,4 @@ public:
     virtual void Recieve(void* Buffer, void* Context); 
 };
 
+#endif

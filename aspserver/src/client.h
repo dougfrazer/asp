@@ -10,7 +10,7 @@
 //*******************************************************************************
 
 #include <netinet/in.h>
-#include "PacketStream.h"
+#include "network/PacketStream.h"
 
 #ifndef __CLIENT_H__
 #define __CLIENT_H__

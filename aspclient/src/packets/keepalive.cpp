@@ -9,5 +9,5 @@
 
 void KEEPALIVE_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
-    printf("Got a keepalive packet\n");
+//    printf("Got a keepalive packet\n");
 }

@@ -10,14 +10,19 @@
 
 #include "PacketStream.h"
 
-#include "stdio.h"
+#include "sys/socket.h"
 
 //*****************************************************************************
 void PACKET_STREAM::AddPacket(PACKET_HANDLER* Packet, void* Buffer)
 {
+    AddPacket(Packet->GetId(), Packet->GetSize(), Buffer);    
+}
+//*****************************************************************************
+void PACKET_STREAM::AddPacket(u32 Id, u8 Size, void* Buffer)
+{
     HEADER Header;
-    Header.Size = Packet->GetSize();
-    Header.Id   = Packet->GetId();
+    Header.Size = Size;
+    Header.Id   = Id;
   
     assert(DataOffset + sizeof(Header) + Header.Size < sizeof(Data));
 
@@ -47,5 +52,12 @@ void PACKET_STREAM::RecievePackets(void* Buffer, size_t size, void* Context)
         size -= Header->Size;
     }
     assert(size == 0);
+}
+//*****************************************************************************
+void PACKET_STREAM::Transmit(int sockfd, sockaddr* Address)
+{
+    ssize_t size = sendto(sockfd, (void*)&Data[0], DataOffset, 0, Address, sizeof(*Address));
+    assert(size == DataOffset);
+    DataOffset = 0;
 }
 //*****************************************************************************

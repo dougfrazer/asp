@@ -19,18 +19,20 @@
 #include "keyboard.h"
 #include "network.h"
 
+#include "ASPLib.h"
+
 #define UP_ARROW    72
 #define LEFT_ARROW  75
 #define DOWN_ARROW  80
 #define RIGHT_ARROW 77
 
-static const uint32_t NUM_EVENT_HANDLERS = 26;
+static const u32 NUM_EVENT_HANDLERS = 26;
 
 KEYBOARD_EVENT RegisteredEvents[NUM_EVENT_HANDLERS]; // for now, only the a-z are supported 
 
 void Keyboard_Init()
 {
-    zero(&RegisteredEvents);
+    Memset(&RegisteredEvents[0], (u8)0, sizeof(RegisteredEvents));
 }
 
 void Keyboard_Update(float DeltaTime)
@@ -44,7 +46,7 @@ void Keyboard_Deinit()
 void Keyboard_RegisterEvent(unsigned char c, KEYBOARD_EVENT Event)
 {
     assert(c >= 'a' && c <= 'z');
-    uint32_t Index = (uint32_t)(c - 'a');
+    u32 Index = (u32)(c - 'a');
     if(RegisteredEvents[Index] == NULL) {
         RegisteredEvents[Index] = Event;
     } else {
@@ -55,7 +57,7 @@ void Keyboard_RegisterEvent(unsigned char c, KEYBOARD_EVENT Event)
 void Keyboard_KeyPressed(unsigned char c, int x, int y)
 {
     printf("[KB] got keypress %c (%d %d)\n", c, x, y);
-    uint32_t Index = (uint32_t)(c - 'a');
+    u32 Index = (u32)(c - 'a');
     if(Index >= 0 && Index < NUM_EVENT_HANDLERS && RegisteredEvents[Index] != NULL) {
         RegisteredEvents[Index]();
     }
