@@ -10,8 +10,6 @@
 // @author Doug Frazer
 //*****************************************************************************
 
-#include "stdio.h"
-
 #include "PacketHandler.h"
 
 static PACKET_HANDLER* HandlerTree = null;
