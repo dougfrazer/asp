@@ -1,8 +1,16 @@
+//******************************************************************************
+// Login Ack Packet Implementation
+//
+// (c) April 2013
+// @author Doug Frazer
+//******************************************************************************
 
 
-#include "packets/login_ack_packet.h"
+#include "network/packets/login_ack.h"
 
-void LOGIN_ACK_PACKET::Recieve(void* Buffer, void* Context)
+static LOGIN_ACK_PACKET_HANDLER LoginAckHandler;
+
+void LOGIN_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
     error("Should not recieve Login Ack packets on server");
 }

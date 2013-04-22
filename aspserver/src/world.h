@@ -9,17 +9,18 @@
 // December 2012
 //*******************************************************************************
 
-#include <stdint.h>
-#include "includes/common_include.h"
-
 #ifndef __ASP_SERVER_WORLD_H__
 #define __ASP_SERVER_WORLD_H__
+
+#include "ASPLib.h"
+
+class PACKET_STREAM;
 
 void World_Init();
 void World_Update();
 void World_Deinit();
-bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId);
-void World_SetInitialPosition(uint32_t UserId);
-void World_RequestState(char* Buffer, size_t* Size);
+bool World_SetPosition(u32 x, u32 y, u32 UserId);
+void World_SetInitialPosition(u32 UserId);
+void World_RequestState(PACKET_STREAM* Stream);
 
 #endif

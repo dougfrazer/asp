@@ -78,6 +78,8 @@ void Network_Init()
     NetworkData.Timer = SEND_RATE;
 
     printf("Listening for new connections\n");
+
+    PacketHandler_RegisterAll();
 }
 //*******************************************************************************
 void Network_Deinit()

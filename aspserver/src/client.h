@@ -30,7 +30,7 @@ public:
     sockaddr Address;
     socklen_t AddressLength;
 
-private:
+public:
     PACKET_STREAM Stream;
 };
 

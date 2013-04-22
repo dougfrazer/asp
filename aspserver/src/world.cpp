@@ -15,18 +15,19 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include "includes/asppacket.h"
 #include "ASPLib.h"
+#include "network/PacketStream.h"
 #include "includes/common_include.h"
 #include "includes/math.h"
+#include "network/packets/direction_ack.h"
 #include "world.h"
 
-static uint32_t WorldMap[WORLD_SIZE][WORLD_SIZE];
+static u32 WorldMap[WORLD_SIZE][WORLD_SIZE];
 
 //*******************************************************************************
 // Forward Declarations
 //*******************************************************************************
-static bool World_FindPlayer(uint32_t UserId, int* x, int* y);
+static bool World_FindPlayer(u32 UserId, int* x, int* y);
 
 //*******************************************************************************
 // Public Interface
@@ -46,7 +47,7 @@ void World_Deinit()
     Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
-bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
+bool World_SetPosition(u32 x, u32 y, u32 UserId)
 {
     int x_curr = 0;
     int y_curr = 0;
@@ -66,15 +67,15 @@ bool World_SetPosition(uint32_t x, uint32_t y, uint32_t UserId)
     return false;
 }
 //*******************************************************************************
-void World_SetInitialPosition(uint32_t UserId)
+void World_SetInitialPosition(u32 UserId)
 {
     // See if he is for some reason already in our world
 	int x, y;
 	if(World_FindPlayer(UserId, &x,&y)) return;
 
     // OK, he doesnt exist, just put him in the first available spot
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
+    for(u32 i = 0; i < WORLD_SIZE; i++) {
+        for(u32 j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == 0) {
                 printf("[%lu] Player (%d) placed at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
                 WorldMap[i][j] = UserId;
@@ -85,33 +86,27 @@ void World_SetInitialPosition(uint32_t UserId)
     assert(false); // our world is full???
 }
 //*******************************************************************************
-void World_RequestState(char* Buffer, size_t* Size)
+void World_RequestState(PACKET_STREAM* Stream)
 {
-    ASP_HEADER Header;
-    ASP_DIRECTION_ACK_PACKET Data;
-    Header.Type = DIRECTION_ACK;
-    Header.Length = sizeof(ASP_DIRECTION_ACK_PACKET);
+    DIRECTION_ACK_PACKET_HANDLER::DATA Data;
 
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
+    for(u32 i = 0; i < WORLD_SIZE; i++) {
+        for(u32 j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] != 0) {
                 Data.x = i;
                 Data.y = j;
                 Data.UserId = WorldMap[i][j];
-                memcpy(Buffer + *Size, &Header, sizeof(ASP_HEADER));
-                *Size += sizeof(ASP_HEADER);
-                memcpy(Buffer + *Size, &Data, sizeof(ASP_DIRECTION_ACK_PACKET));
-                *Size += sizeof(ASP_DIRECTION_ACK_PACKET);
+                Stream->AddPacket(StringHash("DIRECTION_ACK"), sizeof(Data), &Data);
             }
         }
     }
 }
 //*******************************************************************************
-static bool World_FindPlayer(uint32_t UserId, int* x, int* y)
+static bool World_FindPlayer(u32 UserId, int* x, int* y)
 {
     // TODO: more efficient algorithm
-    for(uint32_t i = 0; i < WORLD_SIZE; i++) {
-        for(uint32_t j = 0; j < WORLD_SIZE; j++) {
+    for(u32 i = 0; i < WORLD_SIZE; i++) {
+        for(u32 j = 0; j < WORLD_SIZE; j++) {
             if(WorldMap[i][j] == UserId) {
                 *x = i;
                 *y = j;

@@ -45,7 +45,7 @@ void CLIENT::GetWorldState()
     char   WorldState[1500];
     size_t WorldStateSize = 0;
 
-    World_RequestState(WorldState, &WorldStateSize);
+    World_RequestState(&Stream);
 
     assert(Stream.DataOffset + WorldStateSize < sizeof(Stream.Data));
 
