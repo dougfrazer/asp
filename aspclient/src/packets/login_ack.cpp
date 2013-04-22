@@ -4,6 +4,8 @@
 
 #include "network.h"
 
+static LOGIN_ACK_PACKET_HANDLER LoginAckHandler;
+
 void LOGIN_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
     DATA* Data = (DATA*)Buffer;

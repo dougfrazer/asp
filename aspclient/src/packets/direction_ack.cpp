@@ -5,11 +5,13 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "packets/direction.h"
+#include "packets/direction_ack.h"
 
 #include "world.h"
 
-void DIRECTION_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
+static DIRECTION_ACK_PACKET_HANDLER DirectionAckHandler;
+
+void DIRECTION_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
     DATA* Data = (DATA*)Buffer;
     if(Data == null) {

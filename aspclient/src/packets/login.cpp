@@ -9,6 +9,8 @@
 
 #include "network/packets/login.h"
 
+static LOGIN_PACKET_HANDLER LoginHandler;
+
 void LOGIN_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
 {
     //printf("Got a login request");
