@@ -11,7 +11,7 @@
 #define __LOGIN_H__
 
 #include "ASPLib.h"
-#include "PacketHandler.h"
+#include "network/PacketHandler.h"
 
 class LOGIN_PACKET_HANDLER : public PACKET_HANDLER
 {

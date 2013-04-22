@@ -9,7 +9,7 @@
 #define __DIRECTION_H__
 
 #include "ASPLib.h"
-#include "PacketHandler.h"
+#include "network/PacketHandler.h"
 
 class DIRECTION_PACKET_HANDLER : public PACKET_HANDLER
 {

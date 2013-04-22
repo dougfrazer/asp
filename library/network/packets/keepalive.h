@@ -9,7 +9,7 @@
 #define __KEEPALIVE_H__
 
 #include "ASPLib.h"
-#include "PacketHandler.h"
+#include "network/PacketHandler.h"
 
 class KEEPALIVE_PACKET_HANDLER : public PACKET_HANDLER
 {
