@@ -10,6 +10,10 @@
 #include "ASPLib.h"
 #include "MurmurHash.h"
 
+// DEBUG
+#include "string.h"
+// END DEBUG
+
 //*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)
 {
@@ -69,12 +73,30 @@ uint Log2(unsigned int _val)
     return bitcountof(_val) - __builtin_clz(_val);
 }
 //*****************************************************************************
-const u32 StringHash(const char* String)
+
+// DEBUG FEATURE - see what strings are hashing to
+struct String {
+    char Name[100];
+    u32  Hash;
+};
+static String StringTable[100];
+static u32 StringIndex = 0;
+// END DEBUG FEATURE
+
+const u32 StringHash(const char* Str)
 {
     uint len = 0;
-    while(String[len] != '\0') {
+    while(Str[len] != '\0') {
         len++;
     }
-    return MurmurHash(String, len);
+    u32 ret = MurmurHash(Str, len);
+
+    // DEBUG - record recent strings in a circular buffer
+    strncpy(&StringTable[StringIndex].Name[0], Str, sizeof(StringTable[StringIndex].Name)); 
+    StringTable[StringIndex].Hash = ret;
+    StringIndex = StringIndex + 1 == countof(StringTable) ? 0 : StringIndex + 1;
+    // END DEBUG
+   
+    return ret;
 }
 //*****************************************************************************
