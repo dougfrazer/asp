@@ -3,6 +3,9 @@
 // --------------
 //   An interface for defining handlers for a certain type of packet.
 //
+//   There is a list of handlers, which contains every handler regardless 
+//   of whether it is registered or not and a tree of registered handlers.
+//
 // (c) April 2013
 //
 // @author Doug Frazer
