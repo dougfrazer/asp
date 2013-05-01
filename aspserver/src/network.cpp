@@ -155,9 +155,7 @@ static void Network_TransmitPackets()
         CLIENT* Client = *it;
         Client->GetWorldState();
         Client->GetSendBuffer(&SendBuffer, &SendBufferSize);
-        printf("Sending updates to Client=%d (%ld bytes)...", Client->UserId, SendBufferSize);
         Network_SendPacket(SendBuffer, SendBufferSize, &Client->Address, Client->AddressLength);
-        printf("sent!\n");
     }
 }
 //*******************************************************************************

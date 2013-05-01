@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 
@@ -20,14 +21,30 @@
 #include "includes/common_include.h"
 #include "includes/math.h"
 #include "network/packets/direction_ack.h"
+#include "network/packets/direction.h"
 #include "world.h"
 
 static u32 WorldMap[WORLD_SIZE][WORLD_SIZE];
+
+struct POSITION { 
+    int x;
+    int y;
+    int z;
+};
+
+struct PLAYER {
+   u32      Id;
+   POSITION Pos;
+   PLAYER*  Next;
+};
+
+static PLAYER* PlayerList = null;
 
 //*******************************************************************************
 // Forward Declarations
 //*******************************************************************************
 static bool World_FindPlayer(u32 UserId, int* x, int* y);
+static PLAYER* World_FindPlayer(u32 UserId);
 
 //*******************************************************************************
 // Public Interface
@@ -47,73 +64,87 @@ void World_Deinit()
     Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
-bool World_SetPosition(u32 x, u32 y, u32 UserId)
+void World_HandleMovement(DIRECTION_PACKET_HANDLER::DIRECTION Direction, u32 UserId)
 {
-    int x_curr = 0;
-    int y_curr = 0;
-    
-    // Find Player
-    if(World_FindPlayer(UserId, &x_curr, &y_curr)) {
-        WorldMap[x_curr][y_curr] = 0;
-    } else {
-        printf("Got a SetPosition request on a user that doesnt exist in our world (%d)", UserId);
-        return false;
+   
+    PLAYER* Player = World_FindPlayer(UserId);
+    if(Player == null) {
+        return;
     }
 
-    if(WorldMap[x][y] == 0) {
-        WorldMap[x][y] = UserId;
-        return true;
+    switch(Direction)
+    {
+    case DIRECTION_PACKET_HANDLER::NORTH: Player->Pos.x -= 1;
+    case DIRECTION_PACKET_HANDLER::SOUTH: Player->Pos.x += 1;
+    case DIRECTION_PACKET_HANDLER::EAST:  Player->Pos.y -= 1;
+    case DIRECTION_PACKET_HANDLER::WEST:  Player->Pos.y += 1;
     }
-    return false;
 }
-//*******************************************************************************
+//******************************************************************************
+static PLAYER* World_AddUser(u32 UserId)
+{
+    PLAYER** p = &PlayerList;
+    while(*p != null) {
+        *p = (*p)->Next;
+    }
+    *p = (PLAYER*)malloc(sizeof(PLAYER));
+    assert(*p != null);
+    (*p)->Next = null;
+    (*p)->Id = UserId;
+    return (*p);
+}
+//******************************************************************************
 void World_SetInitialPosition(u32 UserId)
 {
     // See if he is for some reason already in our world
 	int x, y;
 	if(World_FindPlayer(UserId, &x,&y)) return;
 
-    // OK, he doesnt exist, just put him in the first available spot
-    for(u32 i = 0; i < WORLD_SIZE; i++) {
-        for(u32 j = 0; j < WORLD_SIZE; j++) {
-            if(WorldMap[i][j] == 0) {
-                printf("[%lu] Player (%d) placed at position (%d,%d)\n", (unsigned long)pthread_self(), UserId, i, j);
-                WorldMap[i][j] = UserId;
-                return;
-            }
-        }
+    PLAYER* Player = World_AddUser(UserId);
+    if(Player == null) {
+        error("somehow failed to add player to linked list");
     }
-    assert(false); // our world is full???
+
+    Player->Pos.x = 0;
+    Player->Pos.y = 0;
+    Player->Pos.z = 1;
 }
 //*******************************************************************************
 void World_RequestState(PACKET_STREAM* Stream)
 {
+    PLAYER* Player = PlayerList;
     DIRECTION_ACK_PACKET_HANDLER::DATA Data;
-
-    for(u32 i = 0; i < WORLD_SIZE; i++) {
-        for(u32 j = 0; j < WORLD_SIZE; j++) {
-            if(WorldMap[i][j] != 0) {
-                Data.x = i;
-                Data.y = j;
-                Data.UserId = WorldMap[i][j];
-                Stream->AddPacket(StringHash("DIRECTION_ACK"), sizeof(Data), &Data);
-            }
-        }
+    
+    while(Player != null) {
+        Data.x = Player->Pos.x;
+        Data.y = Player->Pos.y;
+        Data.UserId = Player->Id;
+        Stream->AddPacket(StringHash("DIRECTION_ACK"), sizeof(Data), &Data);
+        Player = Player->Next;
     }
 }
 //*******************************************************************************
 static bool World_FindPlayer(u32 UserId, int* x, int* y)
 {
-    // TODO: more efficient algorithm
-    for(u32 i = 0; i < WORLD_SIZE; i++) {
-        for(u32 j = 0; j < WORLD_SIZE; j++) {
-            if(WorldMap[i][j] == UserId) {
-                *x = i;
-                *y = j;
-                return true;
-            }
+    PLAYER* Player = PlayerList;
+    while(Player != null) {
+        if(Player->Id == UserId) {
+            *x = Player->Pos.x;
+            *y = Player->Pos.y;
+            return true;
         }
     }
     return false;
+}
+//*******************************************************************************
+static PLAYER* World_FindPlayer(u32 UserId)
+{
+    PLAYER* Player = PlayerList;
+    while(Player != null) {
+        if(Player->Id == UserId) {
+            return Player;
+        }
+    }
+    return null;
 }
 //*******************************************************************************

@@ -17,7 +17,6 @@
 #include <unistd.h>
 
 #include "network.h"
-#include "includes/common_include.h"
 #include "keyboard.h"
 #include "world.h"
 
@@ -39,10 +38,11 @@ static struct {
 
 static PACKET_STREAM Stream;
 
-static void Network_SendBack()    { Network_SendDirectionPacket(SOUTH, 1); }
-static void Network_SendForward() { Network_SendDirectionPacket(NORTH, 1); }
-static void Network_SendLeft()    { Network_SendDirectionPacket(WEST,  1); }
-static void Network_SendRight()   { Network_SendDirectionPacket(EAST,  1); } 
+static void Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::DIRECTION Direction);
+static void Network_SendBack()    { Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::SOUTH); }
+static void Network_SendForward() { Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::NORTH); }
+static void Network_SendLeft()    { Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::WEST); }
+static void Network_SendRight()   { Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::EAST); } 
 static void Network_Transmit();
 // *****************************************************************************
 // *****************************************************************************
@@ -51,7 +51,6 @@ static void Network_SendLoginRequest(u32 UserId)
     LOGIN_PACKET_HANDLER::DATA Data;
     Data.UserId = UserId;
     Stream.AddPacket(StringHash("LOGIN"), sizeof(Data), &Data);
-    Network_Transmit();
 }
 // *****************************************************************************
 void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
@@ -114,11 +113,12 @@ void Network_Update(float DeltaTime)
     }
     char buffer[MAX_RECV_LEN];
     ssize_t len = 0;
-    //Network_SendTestPacket();
+    
     do {
 		Network_Read(buffer, sizeof(buffer), &len);    
 		if(len > 0) Stream.RecievePackets(buffer, len, null);
     } while( len > 0);
+    Network_Transmit();
 }
 // *****************************************************************************
 void Network_Deinit()
@@ -127,15 +127,12 @@ void Network_Deinit()
     shutdown(NetworkData.sockfd, 2);
 }
 // *****************************************************************************
-void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude)
+static void Network_SendDirectionPacket(DIRECTION_PACKET_HANDLER::DIRECTION Direction)
 {
     DIRECTION_PACKET_HANDLER::DATA Data;
-    
-    bool MoveSuccessful = World_AttemptMovement(direction, magnitude, NetworkData.LoginId, &Data.x, &Data.y);
-    if(!MoveSuccessful) return; // TODO: send it anyway?
-
+    Data.UserId = NetworkData.LoginId;
+    Data.Direction = Direction;
     Stream.AddPacket(StringHash("DIRECTION"), sizeof(Data), &Data);
-    Network_Transmit();
 }
 // *****************************************************************************
 static void Network_Transmit()

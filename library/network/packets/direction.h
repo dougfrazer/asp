@@ -14,10 +14,16 @@
 class DIRECTION_PACKET_HANDLER : public PACKET_HANDLER
 {
 public:
+    enum DIRECTION {
+        NORTH,
+        EAST,
+        SOUTH,
+        WEST,
+    };
+
     struct DATA {
-        u32  x;
-        u32  y;
-        u32  UserId;
+        DIRECTION Direction;
+        u32       UserId;
     };
 
 public:

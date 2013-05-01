@@ -17,7 +17,6 @@ void Network_Init();
 void Network_Update(float DeltaTime);
 void Network_Deinit();
 
-void Network_SendDirectionPacket(ASP_DIRECTION direction, int magnitude);
 void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data);
 
 #endif

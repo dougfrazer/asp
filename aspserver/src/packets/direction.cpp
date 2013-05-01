@@ -25,8 +25,7 @@ void DIRECTION_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
         if(Client->UserId != Data->UserId) {
             //printf("Got a move command from userid=%d for userid=%d\n", Client->UserId, Data->UserId);
         }
-        if(!World_SetPosition(Data->x, Data->y, Client->UserId)) {
-            //printf("Error setting position for userid=%d\n", Client->UserId);
-        }
+
+        World_HandleMovement(Data->Direction, Client->UserId);
     }
 }
