@@ -17,6 +17,7 @@ void Network_Init();
 void Network_Update(float DeltaTime);
 void Network_Deinit();
 
+bool Network_IsUserLocal(u32 UserId);
 void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data);
 
 #endif

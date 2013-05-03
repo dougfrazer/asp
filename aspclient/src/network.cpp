@@ -140,3 +140,7 @@ static void Network_Transmit()
     Stream.Transmit(NetworkData.sockfd, (struct sockaddr*)&NetworkData.Destination);
 }
 // *****************************************************************************
+bool Network_IsUserLocal(u32 UserId)
+{
+    return UserId == NetworkData.LoginId;
+}

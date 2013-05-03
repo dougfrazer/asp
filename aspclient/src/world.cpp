@@ -17,6 +17,7 @@
 
 #include "keyboard.h"
 #include "world.h"
+#include "network.h"
 
 static void World_Reshape(int width, int height);
 static void World_Idle();
@@ -76,17 +77,31 @@ float angle = 0.0f;
 
 void World_Draw()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    PLAYER* Player;
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Reset Transformations
     glLoadIdentity();
 
     // Set Camera
-    //gluLookAt(x, 1.0f, z,  1+1x, 1.0f, z+1z, 0.0f, 1.0f, 0.0f);
-    gluLookAt( 0.0f, 10.0f, 10.0f, 
-               0.0f, 0.0f, 0.0f, 
-               0.0f, 1.0f, 0.0f );
+    // Find local player and look at him
+    Player = PlayerList;
+    while(Player != null) {
+        if(Network_IsUserLocal(Player->Id)) {
+            break;
+        }
+        Player = Player->Next;
+    }
+    if(Player != null) {
+        gluLookAt( Player->Pos.x, Player->Pos.y + 10.0, Player->Pos.z + 10.0,
+                   Player->Pos.x, Player->Pos.y, Player->Pos.z, 
+                   0.0f, 1.0f, 0.0f );
+    } else {
+        gluLookAt( 0.0f, 10.0f, 10.0f, 
+                   0.0f, 0.0f, 0.0f, 
+                   0.0f, 1.0f, 0.0f );
+    }
 
     // Draw Ground
     glColor3f(0.0f, 1.0f, 0.0f);
@@ -98,8 +113,8 @@ void World_Draw()
     glEnd();
 
     // Draw each Player
-    PLAYER* Player = PlayerList;
-   while(Player != null) {
+    Player = PlayerList;
+    while(Player != null) {
         glPushMatrix();
         World_DrawPlayer(Player);
         glPopMatrix();
