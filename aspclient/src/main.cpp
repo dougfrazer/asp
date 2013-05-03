@@ -33,9 +33,15 @@ static void Main_Deinit();
 //*******************************************************************************
 // Public Interface
 //*******************************************************************************
+#define SET_UPDATE_TIME 1/20.0
 int main()
 {
     time_t PreviousClock = clock();
+    
+    struct timespec SleepReq, SleepRes;
+    
+    SleepReq.tv_sec = 0;
+    SleepReq.tv_nsec = (SET_UPDATE_TIME)*(1000)*(1000)*(1000);
     
     Main_Init();
     
@@ -47,6 +53,7 @@ int main()
         
         Main_Update(DeltaTime);
         Main_Draw();
+        nanosleep(&SleepReq, &SleepRes);
     }
     
     Main_Deinit();

@@ -9,6 +9,8 @@
 
 #include "world.h"
 
+#include "stdio.h"
+
 static DIRECTION_ACK_PACKET_HANDLER DirectionAckHandler;
 
 void DIRECTION_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
@@ -19,6 +21,7 @@ void DIRECTION_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
         return;
     }
 
-//    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d]\n", Data->UserId, Data->x, Data->y);
-    World_SetPosition( Data->x, Data->y, Data->UserId );
+    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d | z=%d]\n",
+            Data->UserId, Data->x, Data->y, Data->z);
+    World_SetPosition( Data->x, Data->y, Data->z, Data->UserId );
 }

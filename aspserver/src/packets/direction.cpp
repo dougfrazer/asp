@@ -10,6 +10,8 @@
 #include "client.h"
 #include "world.h"
 
+#include "stdio.h"
+
 static DIRECTION_PACKET_HANDLER DirectionHander;
 
 void DIRECTION_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
@@ -21,11 +23,7 @@ void DIRECTION_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
         return;
     }
 
-    if(Client->UserId != null) {
-        if(Client->UserId != Data->UserId) {
-            //printf("Got a move command from userid=%d for userid=%d\n", Client->UserId, Data->UserId);
-        }
+    printf("Got a move command from userid=%d for userid=%d\n", Client->UserId, Data->UserId);
 
-        World_HandleMovement(Data->Direction, Client->UserId);
-    }
+    World_HandleMovement(Data->Direction, Client->UserId);
 }

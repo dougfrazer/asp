@@ -53,13 +53,8 @@ void CLIENT::GetWorldState()
     Stream.DataOffset += WorldStateSize;
 }
 //*******************************************************************************
-void CLIENT::GetSendBuffer(char** Buffer, size_t* Size)
+void CLIENT::Transmit(int sockfd)
 {
-    // It is assumed we wipe out the data after this call
-    // TODO: this has some serious implications, need a better design 
-    *Buffer = &Stream.Data[0];
-    *Size = Stream.DataOffset;
-    Stream.DataOffset = 0;
+    Stream.Transmit(sockfd, &Address);
 }
 //*******************************************************************************
-

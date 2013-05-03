@@ -116,15 +116,12 @@ void World_Deinit()
 // *****************************************************************************
 static PLAYER* World_AddUser(u32 UserId)
 {
-    PLAYER** p = &PlayerList;
-    while(*p != null) {
-        *p = (*p)->Next;
-    }
-    *p = (PLAYER*)malloc(sizeof(PLAYER));
-    assert(*p != null);
-    (*p)->Next = null;
-    (*p)->Id = UserId;
-    return (*p);
+    PLAYER* Player = (PLAYER*)malloc(sizeof(PLAYER));
+    assert(Player != null);
+    Player->Next = PlayerList;
+    Player->Id = UserId;
+    PlayerList = Player;
+    return Player;
 }
 // *****************************************************************************
 static PLAYER* World_FindUser(u32 UserId)
@@ -134,14 +131,13 @@ static PLAYER* World_FindUser(u32 UserId)
         if(p->Id == UserId) {
             return p;
         }
+        p = p->Next;
     }
     return null;
 }
 // ****************************************************************************
-void World_SetPosition(u32 x, u32 y, u32 UserId)
+void World_SetPosition(u32 x, u32 y, u32 z, u32 UserId)
 {
-    u32 z = 1.0;
-
     PLAYER* Player = World_FindUser(UserId);
     if(Player == null) {
         Player = World_AddUser(UserId);

@@ -1,2 +1,2 @@
 all:
-	g++ -g -I. -I../../library -I../../library/network -I../../ *.cpp packets/*.cpp -L../../library -lasp -lglut -lGL -lGLU
+	g++ -g -o aspclient -I. -I../../library -I../../library/network -I../../ *.cpp packets/*.cpp -L../../library -lasp -lglut -lGL -lGLU

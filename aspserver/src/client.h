@@ -24,7 +24,7 @@ public:
 public:
     void ProcessData(char* Buffer, int Size);
     void GetWorldState();
-    void GetSendBuffer(char** Buffer, size_t* Size);
+    void Transmit(int sockfd);
 
     int UserId;
     sockaddr Address;

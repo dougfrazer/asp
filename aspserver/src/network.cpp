@@ -135,27 +135,12 @@ void Network_RequestTransmit()
 //*******************************************************************************
 // Private Interface
 //*******************************************************************************
-static void Network_SendPacket(char* buffer, size_t size, sockaddr* dest, socklen_t addrlen)
-{
-    long len = 0;
-    do {
-        len = sendto(NetworkData.sockfd, buffer, size, 0, dest, addrlen);
-        if(len == -1 && errno != EAGAIN) {
-            printf("Error writing to network device %d (%s)\n", errno, strerror(errno));
-            return;
-        }
-    } while(len == 0 && errno == EAGAIN);
-}
-//*******************************************************************************
 static void Network_TransmitPackets()
 {
-    char*  SendBuffer;
-    size_t SendBufferSize;
     for(ListIterator it = ClientList.begin(); it != ClientList.end(); it++) {
         CLIENT* Client = *it;
         Client->GetWorldState();
-        Client->GetSendBuffer(&SendBuffer, &SendBufferSize);
-        Network_SendPacket(SendBuffer, SendBufferSize, &Client->Address, Client->AddressLength);
+        Client->Transmit(NetworkData.sockfd);
     }
 }
 //*******************************************************************************

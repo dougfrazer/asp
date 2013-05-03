@@ -60,7 +60,7 @@ void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
         printf("Login successful as userid=%d position=(%d,%d)\n", Data->UserId, Data->x, Data->y);
         NetworkData.LoginId = Data->UserId;
         NetworkData.LoginConfirmed = true;
-        World_SetPosition(Data->x, Data->y, Data->UserId);
+        World_SetPosition(Data->x, Data->y, Data->z, Data->UserId);
     } else {
         printf("Login unnsuccessful, (error %d) trying with a userid=%d\n", Data->Error, Data->UserId+1);
         Network_SendLoginRequest( Data->UserId + 1 );

@@ -23,6 +23,7 @@ public:
         u32  Unused      : 16;
         u32  x;
         u32  y;
+        u32  z;
     };
 
     u32 GetSize()   { return sizeof(DATA); }

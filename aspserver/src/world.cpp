@@ -74,24 +74,21 @@ void World_HandleMovement(DIRECTION_PACKET_HANDLER::DIRECTION Direction, u32 Use
 
     switch(Direction)
     {
-    case DIRECTION_PACKET_HANDLER::NORTH: Player->Pos.x -= 1;
-    case DIRECTION_PACKET_HANDLER::SOUTH: Player->Pos.x += 1;
-    case DIRECTION_PACKET_HANDLER::EAST:  Player->Pos.y -= 1;
-    case DIRECTION_PACKET_HANDLER::WEST:  Player->Pos.y += 1;
+    case DIRECTION_PACKET_HANDLER::NORTH: Player->Pos.z -= 1; break;
+    case DIRECTION_PACKET_HANDLER::SOUTH: Player->Pos.z += 1; break;
+    case DIRECTION_PACKET_HANDLER::EAST:  Player->Pos.x += 1; break;
+    case DIRECTION_PACKET_HANDLER::WEST:  Player->Pos.x -= 1; break;
     }
 }
 //******************************************************************************
 static PLAYER* World_AddUser(u32 UserId)
 {
-    PLAYER** p = &PlayerList;
-    while(*p != null) {
-        *p = (*p)->Next;
-    }
-    *p = (PLAYER*)malloc(sizeof(PLAYER));
-    assert(*p != null);
-    (*p)->Next = null;
-    (*p)->Id = UserId;
-    return (*p);
+    PLAYER* Player = (PLAYER*)malloc(sizeof(PLAYER));
+    assert(Player != null);
+    Player->Next = PlayerList;
+    Player->Id = UserId;
+    PlayerList = Player;
+    return Player;
 }
 //******************************************************************************
 void World_SetInitialPosition(u32 UserId)
@@ -118,6 +115,7 @@ void World_RequestState(PACKET_STREAM* Stream)
     while(Player != null) {
         Data.x = Player->Pos.x;
         Data.y = Player->Pos.y;
+        Data.z = Player->Pos.z;
         Data.UserId = Player->Id;
         Stream->AddPacket(StringHash("DIRECTION_ACK"), sizeof(Data), &Data);
         Player = Player->Next;
@@ -133,6 +131,7 @@ static bool World_FindPlayer(u32 UserId, int* x, int* y)
             *y = Player->Pos.y;
             return true;
         }
+        Player = Player->Next;
     }
     return false;
 }
@@ -144,6 +143,7 @@ static PLAYER* World_FindPlayer(u32 UserId)
         if(Player->Id == UserId) {
             return Player;
         }
+        Player = Player->Next;
     }
     return null;
 }
