@@ -11,6 +11,9 @@
 #include <GL/freeglut.h>
 #include <GL/glut.h>
 
+// TODO: write game-specific math functions in the library
+#include <math.h>
+
 #include "includes/common_include.h"
 #include "includes/math.h"
 #include "ASPLib.h"
@@ -21,12 +24,15 @@
 
 static void World_Reshape(int width, int height);
 static void World_Idle();
+static void World_Rotate(int button, int state,int x, int y);
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
+static void World_DrawDebugText();
+static void World_UpdateCameraRotation();
 
 struct POSITION {
     int x;
     int y;
-    int z;
+   	int z;
 };
 
 struct PLAYER {
@@ -36,6 +42,14 @@ struct PLAYER {
 };
 
 static PLAYER* PlayerList = null;
+static float CameraAngle = 0.0;
+static struct CAMERA_LOCATION {
+	float x;
+	float y;
+	float z;
+} CameraLocation = { 0.0, 0.0, 0.0 };
+
+#define PI 3.14159265
 
 // *****************************************************************************
 void World_Init()
@@ -47,7 +61,7 @@ void World_Init()
     assert(PlayerList == null);
     
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(320,320);
+    glutInitWindowSize(640,640);
     glutInitWindowPosition(100, 100);
     
     glutCreateWindow("Awesome Program");
@@ -55,6 +69,7 @@ void World_Init()
     glutDisplayFunc(World_Draw);
     glutReshapeFunc(World_Reshape);
     glutIdleFunc(World_Draw);
+	glutMouseFunc(World_Rotate);
     glutKeyboardFunc(Keyboard_KeyPressed); 
     glutKeyboardUpFunc(Keyboard_KeyUp);
 }
@@ -63,18 +78,83 @@ void World_Update(float DeltaTime)
 {
     glutPostRedisplay();
     glutMainLoopEvent();
+	World_UpdateCameraRotation();
 }
 // *****************************************************************************
+enum SKELETON_NODES
+{
+    NECK,
+	BACK,
+
+    LEFT_SHOULDER,
+    LEFT_ELBOW,
+    LEFT_WRIST,
+    
+    RIGHT_SHOULDER,
+    RIGHT_ELBOW,
+    RIGHT_WRIST,
+
+    TORSO,
+
+    LEFT_THIGH,
+    LEFT_KNEE,
+    LEFT_FOOT,
+
+    RIGHT_THIGH,
+    RIGHT_KNEE,
+    RIGHT_FOOT,
+
+    MAX_SKELETON_NODES,
+};
+
+// TODO: quaternions?
+struct ORIENTATION
+{
+    float rotx;
+    float roty;
+    float rotz;
+    
+    float posx;
+    float posy;
+    float posz;
+};
+
+ORIENTATION TestSkeleton[MAX_SKELETON_NODES] = {
+	{ 0.0, 0.0, 0.0, 0.0, 2.0, 0.0 },     // NECK
+	{ 0.0, 0.0, 0.0, 0.0, 1.5, 0.0 },     // BACK
+
+	{ 0.0, 0.0, 0.0, 0.25, 1.75, 0.0 },  // LEFT SHOULDER
+	{ 0.0, 0.0, 0.0, 0.35, 1.5,  0.0 },  // LEFT ELBOW
+	{ 0.0, 0.0, 0.0, 0.25, 1.25, 0.2 },  // LEFT WRIST
+
+	{ 0.0, 0.0, 0.0, -0.25, 1.75, 0.0 },  // RIGHT SHOULDER
+	{ 0.0, 0.0, 0.0, -0.35, 1.5,  0.0 },  // RIGHT ELBOW
+	{ 0.0, 0.0, 0.0, -0.25, 1.25, 0.2 },  // RIGHT WRIST
+
+	{ 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },    // TORSO
+
+	{ 0.0, 0.0, 0.0, 0.25, 0.9,  0.0 },   // LEFT THIGH
+	{ 0.0, 0.0, 0.0, 0.25, 0.4,  0.1 },   // LEFT KNEE
+	{ 0.0, 0.0, 0.0, 0.25, 0.01, 0.0 },  // LEFT FOOT
+
+	{ 0.0, 0.0, 0.0, -0.25, 0.9,  0.0 },   // RIGHT THIGH
+	{ 0.0, 0.0, 0.0, -0.25, 0.4,  0.1 },   // RIGHT KNEE
+	{ 0.0, 0.0, 0.0, -0.25, 0.01, 0.0 },  // RIGHT FOOT
+};
+
 void World_DrawPlayer(PLAYER* Player)
 {
-    glColor3f(1.0f, 0.0f, 0.0f);
     glTranslatef(Player->Pos.x, Player->Pos.y, Player->Pos.z);
-    glutSolidSphere(0.75f, 20, 20);
+	
+    glColor3f(1.0, 0.0, 0.0);
+	for(uint i = 0; i < MAX_SKELETON_NODES; i++) {
+		glPushMatrix();
+		glTranslatef(TestSkeleton[i].posx, TestSkeleton[i].posy, TestSkeleton[i].posz);
+		glutSolidSphere(0.1, 20, 20);
+		glPopMatrix();
+	}
 }
 // *****************************************************************************
-
-float angle = 0.0f;
-
 void World_Draw()
 {
     PLAYER* Player;
@@ -93,18 +173,22 @@ void World_Draw()
         }
         Player = Player->Next;
     }
+
     if(Player != null) {
-        gluLookAt( Player->Pos.x, Player->Pos.y + 10.0, Player->Pos.z + 10.0,
+		CameraLocation.x = Player->Pos.x + sin(CameraAngle*PI/180)*10.0;
+		CameraLocation.y = Player->Pos.y + 10.0;
+		CameraLocation.z = Player->Pos.z + cos(CameraAngle*PI/180)*10.0;
+        gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
                    Player->Pos.x, Player->Pos.y, Player->Pos.z, 
-                   0.0f, 1.0f, 0.0f );
+                   0.0, 1.0, 0.0 );
     } else {
-        gluLookAt( 0.0f, 10.0f, 10.0f, 
-                   0.0f, 0.0f, 0.0f, 
-                   0.0f, 1.0f, 0.0f );
+        gluLookAt( 0.0, 10.0, 10.0, 
+                   0.0, 0.0, 0.0, 
+                   0.0, 1.0, 0.0 );
     }
 
     // Draw Ground
-    glColor3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_QUADS);
         glVertex3f(-5.0, 0.0, -5.0);
         glVertex3f(-5.0, 0.0,  5.0);
@@ -120,6 +204,8 @@ void World_Draw()
         glPopMatrix();
         Player = Player->Next;
     }
+
+	World_DrawDebugText();
 
     glutSwapBuffers();
 }
@@ -179,6 +265,39 @@ static void World_Idle()
 {
 }
 // ******************************************************************************
+static void World_DrawDebugText()
+{
+	char buffer[100];
+	struct TEXT_POSITION { float x; float y; float z; } TextPosition = { 0, 0, 0 };
+	static float TEXT_HEIGHT = 0.25;
+   
+	PLAYER* Player = PlayerList;
+    while(Player != null) {
+        if(Network_IsUserLocal(Player->Id)) {
+            break;
+        }
+        Player = Player->Next;
+    }
+
+    if(Player == null) {
+		return;
+	}
+	glPushMatrix();
+	glTranslatef(Player->Pos.x, Player->Pos.y + 2.5, Player->Pos.z);
+	snprintf(buffer, sizeof(buffer), "Camera Angle: %f", CameraAngle);
+	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+
+	TextPosition.y += TEXT_HEIGHT;
+	snprintf(buffer, sizeof(buffer), "Camera Position: %f %f %f", CameraLocation.x, CameraLocation.y, CameraLocation.z);
+	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+
+	TextPosition.y += TEXT_HEIGHT;
+	snprintf(buffer, sizeof(buffer), "Player Position: %d %d %d", Player->Pos.x, Player->Pos.y, Player->Pos.z);
+	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+
+	glPopMatrix();
+}
+// ******************************************************************************
 static void World_PrintText(float x, float y, void* font, char* text, float r, float g, float b, float a)
 {
     if(text == NULL || strlen(text) == 0) return;
@@ -195,3 +314,27 @@ static void World_PrintText(float x, float y, void* font, char* text, float r, f
 }
 // ******************************************************************************
 
+static int prevx = 0;
+static int prevy = 0;
+static int currx = 0;
+static int curry = 0;
+static int MouseState = GLUT_UP;
+static void World_Rotate(int button, int state, int x, int y)
+{
+	prevx = currx;
+	prevy = curry;
+	currx = x;
+	curry = y;
+	MouseState = state;
+}
+
+static void World_UpdateCameraRotation()
+{
+	switch(MouseState) {
+		case GLUT_DOWN:
+			CameraAngle = prevx > currx ? CameraAngle + 10 : CameraAngle - 10;
+			break;
+		default:
+			break;
+	}
+}
