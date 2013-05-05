@@ -5,7 +5,7 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "network/packets/direction_ack.h"
+#include "library/network/packets/direction_ack.h"
 
 static DIRECTION_ACK_PACKET_HANDLER DirectionAckHandler;
 

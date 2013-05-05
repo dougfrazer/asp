@@ -5,15 +5,15 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "network/packets/login.h"
-#include "network/packets/login_ack.h"
+#include "library/network/packets/login.h"
+#include "library/network/packets/login_ack.h"
 
-#include "client.h"
-#include "world.h"
+#include "../client.h"
+#include "../world.h"
 
 // TODO: don't depend on STL
 #include <list>
-#include "stdio.h"
+#include <cstdio>
 
 static LOGIN_PACKET_HANDLER LoginHandler;
 

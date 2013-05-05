@@ -10,8 +10,8 @@
 #ifndef __LOGIN_ACK_H__
 #define __LOGIN_ACK_H__
 
-#include "ASPLib.h"
-#include "network/PacketHandler.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketHandler.h"
 
 class LOGIN_ACK_PACKET_HANDLER : public PACKET_HANDLER
 {

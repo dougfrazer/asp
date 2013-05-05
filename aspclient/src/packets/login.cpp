@@ -7,7 +7,7 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "network/packets/login.h"
+#include "library/network/packets/login.h"
 
 static LOGIN_PACKET_HANDLER LoginHandler;
 

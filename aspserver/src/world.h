@@ -12,8 +12,8 @@
 #ifndef __ASP_SERVER_WORLD_H__
 #define __ASP_SERVER_WORLD_H__
 
-#include "ASPLib.h"
-#include "network/packets/direction.h"
+#include "library/ASPLib.h"
+#include "library/network/packets/direction.h"
 
 class PACKET_STREAM;
 

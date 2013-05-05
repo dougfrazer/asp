@@ -10,8 +10,8 @@
 #ifndef __LOGIN_H__
 #define __LOGIN_H__
 
-#include "ASPLib.h"
-#include "network/PacketHandler.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketHandler.h"
 
 class LOGIN_PACKET_HANDLER : public PACKET_HANDLER
 {

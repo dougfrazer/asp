@@ -16,7 +16,7 @@
 
 #include "includes/common_include.h"
 #include "includes/math.h"
-#include "ASPLib.h"
+#include "library/ASPLib.h"
 
 #include "keyboard.h"
 #include "world.h"

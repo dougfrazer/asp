@@ -19,7 +19,7 @@
 #include "keyboard.h"
 #include "network.h"
 
-#include "ASPLib.h"
+#include "library/ASPLib.h"
 
 #define UP_ARROW    72
 #define LEFT_ARROW  75

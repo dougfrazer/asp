@@ -8,8 +8,8 @@
 #ifndef __DIRECTION_H__
 #define __DIRECTION_H__
 
-#include "ASPLib.h"
-#include "network/PacketHandler.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketHandler.h"
 
 class DIRECTION_PACKET_HANDLER : public PACKET_HANDLER
 {

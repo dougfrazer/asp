@@ -5,7 +5,7 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "network/packets/keepalive.h"
+#include "library/network/packets/keepalive.h"
 
 static KEEPALIVE_PACKET_HANDLER KeepaliveHandler;
 

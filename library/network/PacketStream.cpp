@@ -42,7 +42,7 @@ void PACKET_STREAM::RecievePackets(void* Buffer, size_t size, void* Context)
         Handler = PACKET_HANDLER::FindHandler(Header->Id);
         Buffer = (u8*)Buffer + sizeof(HEADER);
         size -= sizeof(HEADER);
-        if(Handler == null) {
+        if(!Handler) {
             error("Got a packet without a matching handler id=%d", Header->id);
         } else {
             Handler->Recieve(Buffer, Context);

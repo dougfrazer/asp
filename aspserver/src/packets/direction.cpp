@@ -5,12 +5,12 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "network/packets/direction.h"
+#include "library/network/packets/direction.h"
 
-#include "client.h"
-#include "world.h"
+#include "../client.h"
+#include "../world.h"
 
-#include "stdio.h"
+#include <cstdio>
 
 static DIRECTION_PACKET_HANDLER DirectionHander;
 

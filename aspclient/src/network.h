@@ -11,7 +11,7 @@
 #define __NETWORK_H__
 
 #include "includes/common_include.h"
-#include "packets/login_ack.h"
+#include "library/network/packets/login_ack.h"
 
 void Network_Init();
 void Network_Update(float DeltaTime);

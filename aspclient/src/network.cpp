@@ -20,10 +20,10 @@
 #include "keyboard.h"
 #include "world.h"
 
-#include "network/PacketStream.h"
+#include "library/network/PacketStream.h"
 
-#include "network/packets/login.h"
-#include "network/packets/direction.h"
+#include "library/network/packets/login.h"
+#include "library/network/packets/direction.h"
 
 // TODO: get rid of static memory
 static struct {

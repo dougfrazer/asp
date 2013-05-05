@@ -5,9 +5,9 @@
 // @author Doug Frazer
 //******************************************************************************
 
-#include "packets/direction_ack.h"
+#include "library/network/packets/direction_ack.h"
 
-#include "world.h"
+#include "../world.h"
 
 #include "stdio.h"
 

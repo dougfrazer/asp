@@ -18,8 +18,8 @@
 #ifndef __PACKET_STREAM_H__
 #define __PACKET_STREAM_H__
 
-#include "ASPLib.h"
-#include "PacketHandler.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketHandler.h"
 
 struct sockaddr;
 

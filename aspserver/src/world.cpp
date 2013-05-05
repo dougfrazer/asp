@@ -16,12 +16,12 @@
 #include <stdio.h>
 #include <pthread.h>
 
-#include "ASPLib.h"
-#include "network/PacketStream.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketStream.h"
 #include "includes/common_include.h"
 #include "includes/math.h"
-#include "network/packets/direction_ack.h"
-#include "network/packets/direction.h"
+#include "library/network/packets/direction_ack.h"
+#include "library/network/packets/direction.h"
 #include "world.h"
 
 static u32 WorldMap[WORLD_SIZE][WORLD_SIZE];

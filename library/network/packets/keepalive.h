@@ -8,8 +8,8 @@
 #ifndef __KEEPALIVE_H__
 #define __KEEPALIVE_H__
 
-#include "ASPLib.h"
-#include "network/PacketHandler.h"
+#include "library/ASPLib.h"
+#include "library/network/PacketHandler.h"
 
 class KEEPALIVE_PACKET_HANDLER : public PACKET_HANDLER
 {

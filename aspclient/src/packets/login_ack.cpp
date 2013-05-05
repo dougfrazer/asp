@@ -1,8 +1,8 @@
 
 
-#include "network/packets/login_ack.h"
+#include "library/network/packets/login_ack.h"
 
-#include "network.h"
+#include "../network.h"
 
 static LOGIN_ACK_PACKET_HANDLER LoginAckHandler;
 
