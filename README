@@ -2,4 +2,4 @@ to build:
 
 ./autogen.sh
 ./configure
-./make
+make
