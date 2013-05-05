@@ -5,7 +5,7 @@ libasp_a_SOURCES = library/ASPLib.cpp library/HashMap.cpp library/MurmurHash.cpp
 
 bin_PROGRAMS=bin/aspclient bin/aspserver
 
-bin_aspclient_SOURCES=aspclient/src/keyboard.cpp aspclient/src/main.cpp aspclient/src/network.cpp aspclient/src/world.cpp aspclient/src/packets/direction_ack.cpp aspclient/src/packets/keepalive.cpp aspclient/src/packets/login.cpp aspclient/src/packets/login_ack.cpp
+bin_aspclient_SOURCES=aspclient/src/camera.cpp aspclient/src/keyboard.cpp aspclient/src/main.cpp aspclient/src/network.cpp aspclient/src/world.cpp aspclient/src/packets/direction_ack.cpp aspclient/src/packets/keepalive.cpp aspclient/src/packets/login.cpp aspclient/src/packets/login_ack.cpp
 
 bin_aspserver_SOURCES=aspserver/src/client.cpp aspserver/src/main.cpp aspserver/src/network.cpp aspserver/src/world.cpp aspserver/src/packets/direction.cpp aspserver/src/packets/direction_ack.cpp aspserver/src/packets/keepalive.cpp aspserver/src/packets/login.cpp aspserver/src/packets/login_ack.cpp
 

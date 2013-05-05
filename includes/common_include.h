@@ -14,9 +14,4 @@ static const float SEND_RATE = 1.0/20.0;
 #define ASP_ESLEEP 0x123001
 #define ASP_EMORE  0x123002
 
-struct Position {
-    int x;
-    int y;
-};
-
 #endif

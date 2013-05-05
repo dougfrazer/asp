@@ -7,6 +7,9 @@
 // @author Doug Frazer
 //*****************************************************************************
 
+#ifndef __ASPLIB_H__
+#define __ASPLIB_H__
+
 #include "stdint.h"
 #include "assert.h"
 
@@ -19,6 +22,7 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
 typedef long unsigned int size_t;
+typedef struct { float x; float y; float z; float w; } vector4;
 
 #define null               0
 #define countof(x)         sizeof(x)/sizeof(*x)
@@ -41,3 +45,5 @@ void Memset(void* dest, u8 val, size_t size);
 uint Log2(uint _val);
 
 const u32 StringHash(const char* String); // TODO: run at build time for constant strings?
+
+#endif

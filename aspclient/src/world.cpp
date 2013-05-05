@@ -11,9 +11,6 @@
 #include <GL/freeglut.h>
 #include <GL/glut.h>
 
-// TODO: write game-specific math functions in the library
-#include <math.h>
-
 #include "includes/common_include.h"
 #include "includes/math.h"
 #include "library/ASPLib.h"
@@ -21,35 +18,20 @@
 #include "keyboard.h"
 #include "world.h"
 #include "network.h"
+#include "camera.h"
 
 static void World_Reshape(int width, int height);
 static void World_Idle();
-static void World_Rotate(int button, int state,int x, int y);
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
 static void World_DrawDebugText();
-static void World_UpdateCameraRotation();
-
-struct POSITION {
-    int x;
-    int y;
-   	int z;
-};
 
 struct PLAYER {
     u32      Id;
-    POSITION Pos;
+    vector4  Pos;
     PLAYER*  Next;
 };
 
 static PLAYER* PlayerList = null;
-static float CameraAngle = 0.0;
-static struct CAMERA_LOCATION {
-	float x;
-	float y;
-	float z;
-} CameraLocation = { 0.0, 0.0, 0.0 };
-
-#define PI 3.14159265
 
 // *****************************************************************************
 void World_Init()
@@ -69,7 +51,7 @@ void World_Init()
     glutDisplayFunc(World_Draw);
     glutReshapeFunc(World_Reshape);
     glutIdleFunc(World_Draw);
-	glutMouseFunc(World_Rotate);
+	glutMouseFunc(Camera_HandleMousePressed);
     glutKeyboardFunc(Keyboard_KeyPressed); 
     glutKeyboardUpFunc(Keyboard_KeyUp);
 }
@@ -78,7 +60,6 @@ void World_Update(float DeltaTime)
 {
     glutPostRedisplay();
     glutMainLoopEvent();
-	World_UpdateCameraRotation();
 }
 // *****************************************************************************
 enum SKELETON_NODES
@@ -155,6 +136,25 @@ void World_DrawPlayer(PLAYER* Player)
 	}
 }
 // *****************************************************************************
+bool World_GetPlayerPosition(vector4* Position)
+{
+    // Find local player and look at him
+    PLAYER* Player = PlayerList;
+    while(Player != null) {
+        if(Network_IsUserLocal(Player->Id)) {
+            break;
+        }
+        Player = Player->Next;
+    }
+	if(Player != null) {
+		Position->x = Player->Pos.x;
+		Position->y = Player->Pos.y;
+		Position->z = Player->Pos.z;
+		return true;
+	}
+	return false;
+}
+// *****************************************************************************
 void World_Draw()
 {
     PLAYER* Player;
@@ -165,21 +165,11 @@ void World_Draw()
     glLoadIdentity();
 
     // Set Camera
-    // Find local player and look at him
-    Player = PlayerList;
-    while(Player != null) {
-        if(Network_IsUserLocal(Player->Id)) {
-            break;
-        }
-        Player = Player->Next;
-    }
-
-    if(Player != null) {
-		CameraLocation.x = Player->Pos.x + sin(CameraAngle*PI/180)*10.0;
-		CameraLocation.y = Player->Pos.y + 10.0;
-		CameraLocation.z = Player->Pos.z + cos(CameraAngle*PI/180)*10.0;
+	vector4 PlayerPosition;
+    if(World_GetPlayerPosition(&PlayerPosition)) {
+		vector4 CameraLocation = Camera_GetLocation();
         gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
-                   Player->Pos.x, Player->Pos.y, Player->Pos.z, 
+                   PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
                    0.0, 1.0, 0.0 );
     } else {
         gluLookAt( 0.0, 10.0, 10.0, 
@@ -271,19 +261,18 @@ static void World_DrawDebugText()
 	struct TEXT_POSITION { float x; float y; float z; } TextPosition = { 0, 0, 0 };
 	static float TEXT_HEIGHT = 0.25;
    
-	PLAYER* Player = PlayerList;
-    while(Player != null) {
-        if(Network_IsUserLocal(Player->Id)) {
-            break;
-        }
-        Player = Player->Next;
-    }
+   	vector4 PlayerPosition;
+	vector4 CameraLocation;
+	float CameraAngle;
 
-    if(Player == null) {
+    if(!World_GetPlayerPosition(&PlayerPosition)) {
 		return;
 	}
+	CameraLocation = Camera_GetLocation();
+	CameraAngle = Camera_GetAngle();
+	
 	glPushMatrix();
-	glTranslatef(Player->Pos.x, Player->Pos.y + 2.5, Player->Pos.z);
+	glTranslatef(PlayerPosition.x, PlayerPosition.y + 2.5, PlayerPosition.z);
 	snprintf(buffer, sizeof(buffer), "Camera Angle: %f", CameraAngle);
 	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
@@ -292,7 +281,7 @@ static void World_DrawDebugText()
 	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
 	TextPosition.y += TEXT_HEIGHT;
-	snprintf(buffer, sizeof(buffer), "Player Position: %d %d %d", Player->Pos.x, Player->Pos.y, Player->Pos.z);
+	snprintf(buffer, sizeof(buffer), "Player Position: %d %d %d", (int)PlayerPosition.x, (int)PlayerPosition.y, (int)PlayerPosition.z);
 	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
 	glPopMatrix();
@@ -313,28 +302,3 @@ static void World_PrintText(float x, float y, void* font, char* text, float r, f
     if(!blending) glDisable(GL_BLEND);
 }
 // ******************************************************************************
-
-static int prevx = 0;
-static int prevy = 0;
-static int currx = 0;
-static int curry = 0;
-static int MouseState = GLUT_UP;
-static void World_Rotate(int button, int state, int x, int y)
-{
-	prevx = currx;
-	prevy = curry;
-	currx = x;
-	curry = y;
-	MouseState = state;
-}
-
-static void World_UpdateCameraRotation()
-{
-	switch(MouseState) {
-		case GLUT_DOWN:
-			CameraAngle = prevx > currx ? CameraAngle + 10 : CameraAngle - 10;
-			break;
-		default:
-			break;
-	}
-}

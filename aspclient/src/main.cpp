@@ -21,6 +21,7 @@
 #include "world.h"
 #include "network.h"
 #include "keyboard.h"
+#include "camera.h"
 
 //*******************************************************************************
 // Forward Declarations
@@ -76,6 +77,7 @@ static void Main_Update(float DeltaTime)
     Keyboard_Update(DeltaTime);
     Network_Update(DeltaTime);
     World_Update(DeltaTime);
+	Camera_Update();
 }
 //*******************************************************************************
 static void Main_Draw()
