@@ -21,7 +21,7 @@ void DIRECTION_ACK_PACKET_HANDLER::Recieve(void* Buffer, void* Context)
         return;
     }
 
-    printf("Recieved a DirectionAck packet [User=%d | x=%d | y=%d | z=%d]\n",
-            Data->UserId, Data->x, Data->y, Data->z);
+    // printf("Recieved a DirectionAck packet [User=%d | x=%f | y=%f | z=%f]\n",
+    //        Data->UserId, Data->x, Data->y, Data->z);
     World_SetPosition( Data->x, Data->y, Data->z, Data->UserId );
 }

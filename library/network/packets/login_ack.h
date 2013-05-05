@@ -21,9 +21,9 @@ public:
         u32  Success     : 1;
         u32  Error       : 15;
         u32  Unused      : 16;
-        u32  x;
-        u32  y;
-        u32  z;
+        float  x;
+        float  y;
+        float  z;
     };
 
     u32 GetSize()   { return sizeof(DATA); }

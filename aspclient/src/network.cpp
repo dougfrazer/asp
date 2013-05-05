@@ -57,7 +57,8 @@ void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
 {
     printf("Recieved a LOGIN_ACK Packet\n");
     if(Data->Success) {
-        printf("Login successful as userid=%d position=(%d,%d)\n", Data->UserId, Data->x, Data->y);
+        printf("Login successful as userid=%d position=(%f,%f,%f)\n", 
+			Data->UserId, Data->x, Data->y, Data->z);
         NetworkData.LoginId = Data->UserId;
         NetworkData.LoginConfirmed = true;
         World_SetPosition(Data->x, Data->y, Data->z, Data->UserId);

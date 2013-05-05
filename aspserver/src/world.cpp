@@ -24,17 +24,9 @@
 #include "library/network/packets/direction.h"
 #include "world.h"
 
-static u32 WorldMap[WORLD_SIZE][WORLD_SIZE];
-
-struct POSITION { 
-    int x;
-    int y;
-    int z;
-};
-
 struct PLAYER {
    u32      Id;
-   POSITION Pos;
+   vector4  Pos;
    PLAYER*  Next;
 };
 
@@ -51,7 +43,6 @@ static PLAYER* World_FindPlayer(u32 UserId);
 //*******************************************************************************
 void World_Init()
 {
-    Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
 void World_Update()
@@ -61,7 +52,6 @@ void World_Update()
 //*******************************************************************************
 void World_Deinit()
 {
-    Memset(&WorldMap, (u8)0, sizeof(WorldMap));
 }
 //*******************************************************************************
 void World_HandleMovement(DIRECTION_PACKET_HANDLER::DIRECTION Direction, u32 UserId)

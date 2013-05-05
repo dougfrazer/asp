@@ -37,6 +37,24 @@ void CAMERA::Update()
 		default:
 			break;
 	}
+
+}
+//*****************************************************************************
+void CAMERA::Draw()
+{
+	// TODO: why does this need to be done during draw?
+	// Set Camera
+	vector4 PlayerPosition;
+    if(World_GetPlayerPosition(&PlayerPosition)) {
+		vector4 CameraLocation = GetLocation();
+        gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
+                   PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
+                   0.0, 1.0, 0.0 );
+    } else {
+        gluLookAt( 0.0, 10.0, 10.0, 
+                   0.0, 0.0, 0.0, 
+                   0.0, 1.0, 0.0 );
+    }
 }
 //*****************************************************************************
 void CAMERA::HandleMousePressed(int button, int state, int x, int y)
@@ -67,4 +85,5 @@ void Camera_HandleMousePressed(int button, int state, int x, int y) { Camera.Han
 void Camera_Init() { Camera.Init(); }
 vector4 Camera_GetLocation() { return Camera.GetLocation(); }
 float Camera_GetAngle() { return Camera.GetAngle(); }
+void Camera_Draw() { Camera.Draw(); }
 //*****************************************************************************

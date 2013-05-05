@@ -16,6 +16,7 @@ class CAMERA
 public:
 	void Init();
 	void Update();
+	void Draw();
 	void HandleMousePressed(int button, int state, int x, int y);
 	vector4 GetLocation();
 	float GetAngle() { return Angle; }
@@ -39,3 +40,4 @@ void Camera_HandleMousePressed(int button, int state, int x, int y);
 void Camera_Init();
 vector4 Camera_GetLocation();
 float Camera_GetAngle();
+void Camera_Draw();

@@ -20,8 +20,6 @@
 #include "network.h"
 #include "camera.h"
 
-static void World_Reshape(int width, int height);
-static void World_Idle();
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
 static void World_DrawDebugText();
 
@@ -36,24 +34,7 @@ static PLAYER* PlayerList = null;
 // *****************************************************************************
 void World_Init()
 {
-    int argc = 0;
-    char *argv = NULL;
-    glutInit(&argc, &argv);
-
     assert(PlayerList == null);
-    
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(640,640);
-    glutInitWindowPosition(100, 100);
-    
-    glutCreateWindow("Awesome Program");
-    
-    glutDisplayFunc(World_Draw);
-    glutReshapeFunc(World_Reshape);
-    glutIdleFunc(World_Draw);
-	glutMouseFunc(Camera_HandleMousePressed);
-    glutKeyboardFunc(Keyboard_KeyPressed); 
-    glutKeyboardUpFunc(Keyboard_KeyUp);
 }
 // *****************************************************************************
 void World_Update(float DeltaTime)
@@ -138,7 +119,6 @@ void World_DrawPlayer(PLAYER* Player)
 // *****************************************************************************
 bool World_GetPlayerPosition(vector4* Position)
 {
-    // Find local player and look at him
     PLAYER* Player = PlayerList;
     while(Player != null) {
         if(Network_IsUserLocal(Player->Id)) {
@@ -157,26 +137,6 @@ bool World_GetPlayerPosition(vector4* Position)
 // *****************************************************************************
 void World_Draw()
 {
-    PLAYER* Player;
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Reset Transformations
-    glLoadIdentity();
-
-    // Set Camera
-	vector4 PlayerPosition;
-    if(World_GetPlayerPosition(&PlayerPosition)) {
-		vector4 CameraLocation = Camera_GetLocation();
-        gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
-                   PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
-                   0.0, 1.0, 0.0 );
-    } else {
-        gluLookAt( 0.0, 10.0, 10.0, 
-                   0.0, 0.0, 0.0, 
-                   0.0, 1.0, 0.0 );
-    }
-
     // Draw Ground
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_QUADS);
@@ -187,7 +147,7 @@ void World_Draw()
     glEnd();
 
     // Draw each Player
-    Player = PlayerList;
+    PLAYER* Player = PlayerList;
     while(Player != null) {
         glPushMatrix();
         World_DrawPlayer(Player);
@@ -196,8 +156,6 @@ void World_Draw()
     }
 
 	World_DrawDebugText();
-
-    glutSwapBuffers();
 }
 // *****************************************************************************
 void World_Deinit()
@@ -227,7 +185,7 @@ static PLAYER* World_FindUser(u32 UserId)
     return null;
 }
 // ****************************************************************************
-void World_SetPosition(u32 x, u32 y, u32 z, u32 UserId)
+void World_SetPosition(float x, float y, float z, u32 UserId)
 {
     PLAYER* Player = World_FindUser(UserId);
     if(Player == null) {
@@ -238,21 +196,6 @@ void World_SetPosition(u32 x, u32 y, u32 z, u32 UserId)
     Player->Pos.x = x;
     Player->Pos.y = y;
     Player->Pos.z = z;
-}
-// *****************************************************************************
-static void World_Reshape(int width, int height)
-{
-    if(height == 0) height = 1;
-    float ratio = width * 1.0 / height;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glViewport(0, 0, width, height);
-    gluPerspective(45.0f, ratio, 0.1f, 100.0f);
-    glMatrixMode(GL_MODELVIEW);
-}
-// *****************************************************************************
-static void World_Idle()
-{
 }
 // ******************************************************************************
 static void World_DrawDebugText()

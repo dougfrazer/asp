@@ -15,7 +15,7 @@ void World_Init();
 void World_Update(float DeltaTime);
 void World_Draw();
 void World_Deinit();
-void World_SetPosition(u32 x, u32 y, u32 z, u32 UserId);
+void World_SetPosition(float x, float y, float z, u32 UserId);
 bool World_GetPlayerPosition(vector4* Position);
 
 #endif

@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "GL/glut.h"
+
 #include "includes/common_include.h"
 
 #include "world.h"
@@ -27,9 +29,11 @@
 // Forward Declarations
 //*******************************************************************************
 static void Main_Init();
+static void Main_InitGlut();
 static void Main_Update(float DeltaTime);
 static void Main_Draw();
 static void Main_Deinit();
+static void Main_Reshape(int width, int height);
 
 //*******************************************************************************
 // Public Interface
@@ -67,6 +71,7 @@ int main()
 //*******************************************************************************
 static void Main_Init()
 {
+	Main_InitGlut();
     Keyboard_Init();
     Network_Init();
     World_Init();
@@ -76,13 +81,19 @@ static void Main_Update(float DeltaTime)
 {
     Keyboard_Update(DeltaTime);
     Network_Update(DeltaTime);
-    World_Update(DeltaTime);
 	Camera_Update();
+    World_Update(DeltaTime);
 }
 //*******************************************************************************
 static void Main_Draw()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+	Camera_Draw();
     World_Draw();
+
+	glutSwapBuffers();
 }
 //*******************************************************************************
 static void Main_Deinit()
@@ -92,3 +103,32 @@ static void Main_Deinit()
     World_Deinit();
 }
 //*******************************************************************************
+static void Main_InitGlut()
+{
+    int argc = 0;
+    char *argv = NULL;
+    glutInit(&argc, &argv);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitWindowSize(640,640);
+    glutInitWindowPosition(100, 100);
+    
+    glutCreateWindow("Awesome Program");
+    
+    glutDisplayFunc(Main_Draw);
+    glutReshapeFunc(Main_Reshape);
+    glutIdleFunc(null);
+	glutMouseFunc(Camera_HandleMousePressed);
+    glutKeyboardFunc(Keyboard_KeyPressed); 
+    glutKeyboardUpFunc(Keyboard_KeyUp);
+}
+//*******************************************************************************
+static void Main_Reshape(int width, int height)
+{
+    if(height == 0) height = 1;
+    float ratio = width * 1.0 / height;
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(0, 0, width, height);
+    gluPerspective(45.0f, ratio, 0.1f, 100.0f);
+    glMatrixMode(GL_MODELVIEW);
+}
