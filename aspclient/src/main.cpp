@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <GL/freeglut.h>
 #include "GL/glut.h"
 
 #include "includes/common_include.h"
@@ -24,6 +25,7 @@
 #include "network.h"
 #include "keyboard.h"
 #include "camera.h"
+#include "actor.h"
 
 //*******************************************************************************
 // Forward Declarations
@@ -83,6 +85,10 @@ static void Main_Update(float DeltaTime)
     Network_Update(DeltaTime);
 	Camera_Update();
     World_Update(DeltaTime);
+	Actor_Update(DeltaTime);
+    
+	glutPostRedisplay();
+    glutMainLoopEvent();
 }
 //*******************************************************************************
 static void Main_Draw()
@@ -92,6 +98,7 @@ static void Main_Draw()
 
 	Camera_Draw();
     World_Draw();
+	Actor_Draw();
 
 	glutSwapBuffers();
 }

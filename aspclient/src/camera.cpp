@@ -10,7 +10,7 @@
 #include <math.h>
 
 #include "camera.h"
-#include "world.h"
+#include "player.h"
 
 #define PI 3.14159265
 
@@ -45,7 +45,7 @@ void CAMERA::Draw()
 	// TODO: why does this need to be done during draw?
 	// Set Camera
 	vector4 PlayerPosition;
-    if(World_GetPlayerPosition(&PlayerPosition)) {
+    if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
 		vector4 CameraLocation = GetLocation();
         gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
                    PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
@@ -69,7 +69,7 @@ vector4 CAMERA::GetLocation()
 {
 	vector4 PlayerPosition;
 	vector4 Location = { 0.0, 0.0, 0.0, 0.0 };
-	if(World_GetPlayerPosition(&PlayerPosition)) {
+	if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
 		Location.x = PlayerPosition.x + sin(Angle*PI/180)*10.0;
 		Location.y = PlayerPosition.y + 10.0;
 		Location.z = PlayerPosition.z + cos(Angle*PI/180)*10.0;

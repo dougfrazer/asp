@@ -19,6 +19,7 @@
 #include "network.h"
 #include "keyboard.h"
 #include "world.h"
+#include "player.h"
 
 #include "library/network/PacketStream.h"
 
@@ -33,7 +34,6 @@ static struct {
     struct sockaddr_in RecievedFrom;
     socklen_t          RecievedFromLength;
     u32 LoginId;
-    bool LoginConfirmed;
 } NetworkData;
 
 static PACKET_STREAM Stream;
@@ -59,9 +59,9 @@ void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
     if(Data->Success) {
         printf("Login successful as userid=%d position=(%f,%f,%f)\n", 
 			Data->UserId, Data->x, Data->y, Data->z);
+		Player_SetPrimaryPlayer(Data->UserId);
         NetworkData.LoginId = Data->UserId;
-        NetworkData.LoginConfirmed = true;
-        World_SetPosition(Data->x, Data->y, Data->z, Data->UserId);
+        Player_SetPosition(Data->x, Data->y, Data->z, Data->UserId);
     } else {
         printf("Login unnsuccessful, (error %d) trying with a userid=%d\n", Data->Error, Data->UserId+1);
         Network_SendLoginRequest( Data->UserId + 1 );
@@ -110,7 +110,6 @@ void Network_Update(float DeltaTime)
     if(NetworkData.LoginId == 0) {
         Network_SendLoginRequest(1);
         NetworkData.LoginId = 1;
-        NetworkData.LoginConfirmed = false;
     }
     char buffer[MAX_RECV_LEN];
     ssize_t len = 0;
