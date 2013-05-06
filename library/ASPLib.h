@@ -34,6 +34,7 @@ typedef struct { float x; float y; float z; float w; } vector4;
 #define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
 #define min(x,y)           ( x < y ? x : y )
 #define max(x,y)           ( x > y ? x : y )
+#define LinearInterpolate(x, x0, x1, y0, y1) ( y0+ ( (float)(y1-y0) * ( (float)(x-x0)/(float)(x1-x0) ) ) )
 
 // TODO: Use restrict keyword? Or just assert?
 // TODO: memmove

@@ -19,7 +19,6 @@
 #include "library/ASPLib.h"
 #include "library/network/PacketStream.h"
 #include "includes/common_include.h"
-#include "includes/math.h"
 #include "library/network/packets/direction_ack.h"
 #include "library/network/packets/direction.h"
 #include "world.h"
