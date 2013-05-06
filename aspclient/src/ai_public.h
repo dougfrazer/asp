@@ -17,7 +17,7 @@
 enum SKELETON_NODE
 {
     NECK,
-	BACK,
+    BACK,
 
     LEFT_SHOULDER,
     LEFT_ELBOW,
@@ -41,8 +41,8 @@ enum SKELETON_NODE
 };
 
 struct CONNECTED_NODE {
-	SKELETON_NODE First;
-	SKELETON_NODE Second;
+    SKELETON_NODE First;
+    SKELETON_NODE Second;
 };
 
 // TODO: quaternions?
@@ -59,7 +59,7 @@ struct ORIENTATION
 
 struct SKELETON {
     ORIENTATION Nodes[MAX_SKELETON_NODES];
-	CONNECTED_NODE* ConnectedNodes;
+    CONNECTED_NODE* ConnectedNodes;
 };
 
 #endif

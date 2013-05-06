@@ -21,32 +21,32 @@ static CAMERA Camera;
 //*****************************************************************************
 void CAMERA::Init()
 {
-	MouseState = GLUT_UP;
-	Previous.x = 0;
-	Previous.y = 0;
-	Current.x = 0;
-	Current.y = 0;
+    MouseState = GLUT_UP;
+    Previous.x = 0;
+    Previous.y = 0;
+    Current.x = 0;
+    Current.y = 0;
 }
 //*****************************************************************************
 void CAMERA::Update()
 {
-	switch(MouseState) {
-		case GLUT_DOWN:
-			Angle = Previous.x > Current.x ? Angle + 10 : Angle - 10;
-			break;
-		default:
-			break;
-	}
+    switch(MouseState) {
+        case GLUT_DOWN:
+            Angle = Previous.x > Current.x ? Angle + 10 : Angle - 10;
+            break;
+        default:
+            break;
+    }
 
 }
 //*****************************************************************************
 void CAMERA::Draw()
 {
-	// TODO: why does this need to be done during draw?
-	// Set Camera
-	vector4 PlayerPosition;
+    // TODO: why does this need to be done during draw?
+    // Set Camera
+    vector4 PlayerPosition;
     if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
-		vector4 CameraLocation = GetLocation();
+        vector4 CameraLocation = GetLocation();
         gluLookAt( CameraLocation.x, CameraLocation.y, CameraLocation.z,
                    PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
                    0.0, 1.0, 0.0 );
@@ -59,22 +59,22 @@ void CAMERA::Draw()
 //*****************************************************************************
 void CAMERA::HandleMousePressed(int button, int state, int x, int y)
 {
-	Previous = Current;
-	Current.x = x;
-	Current.y = y;
-	MouseState = state;
+    Previous = Current;
+    Current.x = x;
+    Current.y = y;
+    MouseState = state;
 }
 //*****************************************************************************
 vector4 CAMERA::GetLocation()
 {
-	vector4 PlayerPosition;
-	vector4 Location = { 0.0, 0.0, 0.0, 0.0 };
-	if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
-		Location.x = PlayerPosition.x + sin(Angle*PI/180)*10.0;
-		Location.y = PlayerPosition.y + 10.0;
-		Location.z = PlayerPosition.z + cos(Angle*PI/180)*10.0;
-	}
-	return Location;
+    vector4 PlayerPosition;
+    vector4 Location = { 0.0, 0.0, 0.0, 0.0 };
+    if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
+        Location.x = PlayerPosition.x + sin(Angle*PI/180)*10.0;
+        Location.y = PlayerPosition.y + 10.0;
+        Location.z = PlayerPosition.z + cos(Angle*PI/180)*10.0;
+    }
+    return Location;
 }
 
 //*****************************************************************************

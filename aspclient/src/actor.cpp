@@ -28,26 +28,26 @@ ACTOR::ACTOR()
         ActorList->Prev = this;
     }
 
-	Animation = null;
-	Physics = null;
+    Animation = null;
+    Physics = null;
 }
 //******************************************************************************
 void Actor_Update(float DeltaTime)
 {
-	for(ACTOR* Actor = Actor_GetFirst(); Actor != null; Actor = Actor_GetNext(Actor)) {
+    for(ACTOR* Actor = Actor_GetFirst(); Actor != null; Actor = Actor_GetNext(Actor)) {
         Actor->Update(DeltaTime);
-		if(Actor->Animation != null) {
-			Actor->Animation->Update(DeltaTime);
-		}
-		if(Actor->Physics != null) {
-			Actor->Physics->Update(DeltaTime);
-		}
+        if(Actor->Animation != null) {
+            Actor->Animation->Update(DeltaTime);
+        }
+        if(Actor->Physics != null) {
+            Actor->Physics->Update(DeltaTime);
+        }
     }
 }
 //******************************************************************************
 void Actor_Draw()
 {
-	for(ACTOR* Actor = Actor_GetFirst(); Actor != null; Actor = Actor_GetNext(Actor)) {
+    for(ACTOR* Actor = Actor_GetFirst(); Actor != null; Actor = Actor_GetNext(Actor)) {
         glPushMatrix();
         Actor->Draw();
         glPopMatrix();
@@ -56,11 +56,11 @@ void Actor_Draw()
 //******************************************************************************
 ACTOR* Actor_GetFirst()
 {
-	return ActorList;
+    return ActorList;
 }
 //******************************************************************************
 ACTOR* Actor_GetNext(ACTOR* Actor)
 {
-	return Actor->Next == ActorList ? null : Actor->Next;
+    return Actor->Next == ActorList ? null : Actor->Next;
 }
 //******************************************************************************

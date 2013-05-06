@@ -51,7 +51,7 @@ void World_Draw()
         glVertex3f( 5.0, 0.0, -5.0);
     glEnd();
 
-	World_DrawDebugText();
+    World_DrawDebugText();
 }
 //*****************************************************************************
 void World_Deinit()
@@ -62,34 +62,34 @@ void World_Deinit()
 static void World_DrawDebugText()
 {
 /*
-	char buffer[100];
-	struct TEXT_POSITION { float x; float y; float z; } TextPosition = { 0, 0, 0 };
-	static float TEXT_HEIGHT = 0.25;
+    char buffer[100];
+    struct TEXT_POSITION { float x; float y; float z; } TextPosition = { 0, 0, 0 };
+    static float TEXT_HEIGHT = 0.25;
    
-   	vector4 PlayerPosition;
-	vector4 CameraLocation;
-	float CameraAngle;
+    vector4 PlayerPosition;
+    vector4 CameraLocation;
+    float CameraAngle;
 
     if(!World_GetPlayerPosition(&PlayerPosition)) {
-		return;
-	}
-	CameraLocation = Camera_GetLocation();
-	CameraAngle = Camera_GetAngle();
-	
-	glPushMatrix();
-	glTranslatef(PlayerPosition.x, PlayerPosition.y + 2.5, PlayerPosition.z);
-	snprintf(buffer, sizeof(buffer), "Camera Angle: %f", CameraAngle);
-	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+        return;
+    }
+    CameraLocation = Camera_GetLocation();
+    CameraAngle = Camera_GetAngle();
+    
+    glPushMatrix();
+    glTranslatef(PlayerPosition.x, PlayerPosition.y + 2.5, PlayerPosition.z);
+    snprintf(buffer, sizeof(buffer), "Camera Angle: %f", CameraAngle);
+    World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
-	TextPosition.y += TEXT_HEIGHT;
-	snprintf(buffer, sizeof(buffer), "Camera Position: %f %f %f", CameraLocation.x, CameraLocation.y, CameraLocation.z);
-	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+    TextPosition.y += TEXT_HEIGHT;
+    snprintf(buffer, sizeof(buffer), "Camera Position: %f %f %f", CameraLocation.x, CameraLocation.y, CameraLocation.z);
+    World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
-	TextPosition.y += TEXT_HEIGHT;
-	snprintf(buffer, sizeof(buffer), "Player Position: %d %d %d", (int)PlayerPosition.x, (int)PlayerPosition.y, (int)PlayerPosition.z);
-	World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
+    TextPosition.y += TEXT_HEIGHT;
+    snprintf(buffer, sizeof(buffer), "Player Position: %d %d %d", (int)PlayerPosition.x, (int)PlayerPosition.y, (int)PlayerPosition.z);
+    World_PrintText(TextPosition.x, TextPosition.y, GLUT_BITMAP_HELVETICA_10, buffer, 1.0, 1.0, 1.0, 0.5);
 
-	glPopMatrix();
+    glPopMatrix();
 */
 }
 //******************************************************************************

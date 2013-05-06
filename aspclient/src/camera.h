@@ -14,25 +14,25 @@
 class CAMERA
 {
 public:
-	void Init();
-	void Update();
-	void Draw();
-	void HandleMousePressed(int button, int state, int x, int y);
-	vector4 GetLocation();
-	float GetAngle() { return Angle; }
+    void Init();
+    void Update();
+    void Draw();
+    void HandleMousePressed(int button, int state, int x, int y);
+    vector4 GetLocation();
+    float GetAngle() { return Angle; }
 
 private:
-	float Angle;
-	vector4 Focus;
+    float Angle;
+    vector4 Focus;
 
-	struct MOUSE_CLICK_LOCATION {
-		int x;
-		int y;
-	};
+    struct MOUSE_CLICK_LOCATION {
+        int x;
+        int y;
+    };
 
-	MOUSE_CLICK_LOCATION Current;
-	MOUSE_CLICK_LOCATION Previous;
-	int MouseState;
+    MOUSE_CLICK_LOCATION Current;
+    MOUSE_CLICK_LOCATION Previous;
+    int MouseState;
 };
 
 void Camera_Update();

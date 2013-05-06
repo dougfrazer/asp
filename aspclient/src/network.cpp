@@ -58,8 +58,8 @@ void Network_ProcessLoginAckPacket(LOGIN_ACK_PACKET_HANDLER::DATA* Data)
     printf("Recieved a LOGIN_ACK Packet\n");
     if(Data->Success) {
         printf("Login successful as userid=%d position=(%f,%f,%f)\n", 
-			Data->UserId, Data->x, Data->y, Data->z);
-		Player_SetPrimaryPlayer(Data->UserId);
+            Data->UserId, Data->x, Data->y, Data->z);
+        Player_SetPrimaryPlayer(Data->UserId);
         NetworkData.LoginId = Data->UserId;
         Player_SetPosition(Data->x, Data->y, Data->z, Data->UserId);
     } else {
@@ -115,8 +115,8 @@ void Network_Update(float DeltaTime)
     ssize_t len = 0;
     
     do {
-		Network_Read(buffer, sizeof(buffer), &len);    
-		if(len > 0) Stream.RecievePackets(buffer, len, null);
+        Network_Read(buffer, sizeof(buffer), &len);    
+        if(len > 0) Stream.RecievePackets(buffer, len, null);
     } while( len > 0);
     Network_Transmit();
 }

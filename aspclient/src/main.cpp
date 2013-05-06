@@ -73,7 +73,7 @@ int main()
 //*******************************************************************************
 static void Main_Init()
 {
-	Main_InitGlut();
+    Main_InitGlut();
     Keyboard_Init();
     Network_Init();
     World_Init();
@@ -83,11 +83,11 @@ static void Main_Update(float DeltaTime)
 {
     Keyboard_Update(DeltaTime);
     Network_Update(DeltaTime);
-	Camera_Update();
+    Camera_Update();
     World_Update(DeltaTime);
-	Actor_Update(DeltaTime);
+    Actor_Update(DeltaTime);
     
-	glutPostRedisplay();
+    glutPostRedisplay();
     glutMainLoopEvent();
 }
 //*******************************************************************************
@@ -96,11 +96,11 @@ static void Main_Draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-	Camera_Draw();
+    Camera_Draw();
     World_Draw();
-	Actor_Draw();
+    Actor_Draw();
 
-	glutSwapBuffers();
+    glutSwapBuffers();
 }
 //*******************************************************************************
 static void Main_Deinit()
@@ -124,7 +124,7 @@ static void Main_InitGlut()
     glutDisplayFunc(Main_Draw);
     glutReshapeFunc(Main_Reshape);
     glutIdleFunc(null);
-	glutMouseFunc(Camera_HandleMousePressed);
+    glutMouseFunc(Camera_HandleMousePressed);
     glutKeyboardFunc(Keyboard_KeyPressed); 
     glutKeyboardUpFunc(Keyboard_KeyUp);
 }

@@ -12,18 +12,18 @@
 class PLAYER : public ACTOR
 {
 public:
-	PLAYER(u32 UserId);
-	virtual ~PLAYER();
-	
+    PLAYER(u32 UserId);
+    virtual ~PLAYER();
+    
 public:
     void Update(float DeltaTime);
     void Draw();
 
 public:
-	u32     Id;
-	vector4 Position;
-	PLAYER* Next;
-	PLAYER* Prev;
+    u32     Id;
+    vector4 Position;
+    PLAYER* Next;
+    PLAYER* Prev;
 };
 
 void Player_SetPrimaryPlayer(u32 UserId);

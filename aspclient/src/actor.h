@@ -21,8 +21,8 @@ class PHYSICS;
 class ACTOR
 {
 public:
-	ACTOR();
-	virtual ~ACTOR() {};
+    ACTOR();
+    virtual ~ACTOR() {};
 
 public:
     virtual void Update(float DeltaTime) = 0;
@@ -33,8 +33,8 @@ public:
     ANIMATION*     Animation;
     PHYSICS*       Physics;
 
-	ACTOR*         Prev;
-	ACTOR*         Next;
+    ACTOR*         Prev;
+    ACTOR*         Next;
 };
 
 void Actor_Draw();
