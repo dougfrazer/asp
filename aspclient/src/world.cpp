@@ -22,18 +22,9 @@
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
 static void World_DrawDebugText();
 
-struct PLAYER {
-    u32      Id;
-    vector4  Pos;
-    PLAYER*  Next;
-};
-
-static PLAYER* PlayerList = null;
-
 //*****************************************************************************
 void World_Init()
 {
-    assert(PlayerList == null);
 }
 //*****************************************************************************
 void World_Update(float DeltaTime)
