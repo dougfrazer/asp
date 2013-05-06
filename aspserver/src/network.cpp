@@ -24,7 +24,6 @@
 #include "includes/common_include.h"
 
 #include "network.h"
-#include "includes/asppacket.h"
 #include "client.h" 
 
 #include <list>
