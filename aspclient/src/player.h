@@ -8,6 +8,7 @@
 //******************************************************************************
 
 #include "actor.h"
+#include "../data/obj.h"
 
 class PLAYER : public ACTOR
 {
@@ -24,6 +25,11 @@ public:
     vector4 Position;
     PLAYER* Next;
     PLAYER* Prev;
+
+private:
+    void Load(const char* Filename);
+    ObjData* Data;
+    const char* DataName; 
 };
 
 void Player_SetPrimaryPlayer(u32 UserId);

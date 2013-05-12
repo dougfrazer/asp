@@ -6,6 +6,8 @@
 //******************************************************************************
 
 #include "player.h"
+#include "../data/obj.h"
+#include "stdio.h"
 
 #include "GL/glut.h"
 
@@ -16,58 +18,13 @@ static u32 PrimaryPlayerUserId = 0;
 static PLAYER* PrimaryPlayer = null;
 static PLAYER* PlayerList = null;
 
-static CONNECTED_NODE TestSkeletonConnectedNodes[] =
-{
-        { NECK, BACK },
-        { BACK, TORSO },
-        { BACK, LEFT_SHOULDER },
-        { BACK, RIGHT_SHOULDER },
-        { LEFT_SHOULDER, LEFT_ELBOW },
-        { LEFT_ELBOW, LEFT_WRIST },
-        { RIGHT_SHOULDER, RIGHT_ELBOW },
-        { RIGHT_ELBOW, RIGHT_WRIST },
-        { TORSO, LEFT_THIGH },
-        { TORSO, RIGHT_THIGH },
-        { LEFT_THIGH, LEFT_KNEE },
-        { LEFT_KNEE, LEFT_FOOT },
-        { RIGHT_THIGH, RIGHT_KNEE },
-        { RIGHT_KNEE, RIGHT_FOOT },
-        { MAX_SKELETON_NODES, MAX_SKELETON_NODES },
-};
-
-static SKELETON TestSkeleton = {
-    { 
-        { 0.0, 0.0, 0.0, 0.0, 2.0, 0.0 },     // NECK
-        { 0.0, 0.0, 0.0, 0.0, 1.5, 0.0 },     // BACK
-
-        { 0.0, 0.0, 0.0, 0.25, 1.75, 0.0 },  // LEFT SHOULDER
-        { 0.0, 0.0, 0.0, 0.35, 1.5,  0.0 },  // LEFT ELBOW
-        { 0.0, 0.0, 0.0, 0.25, 1.25, 0.2 },  // LEFT WRIST
-
-        { 0.0, 0.0, 0.0, -0.25, 1.75, 0.0 },  // RIGHT SHOULDER
-        { 0.0, 0.0, 0.0, -0.35, 1.5,  0.0 },  // RIGHT ELBOW
-        { 0.0, 0.0, 0.0, -0.25, 1.25, 0.2 },  // RIGHT WRIST
-
-        { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 },    // TORSO
-
-        { 0.0, 0.0, 0.0, 0.25, 0.9,  0.0 },   // LEFT THIGH
-        { 0.0, 0.0, 0.0, 0.25, 0.4,  0.1 },   // LEFT KNEE
-        { 0.0, 0.0, 0.0, 0.25, 0.01, 0.0 },  // LEFT FOOT
-
-        { 0.0, 0.0, 0.0, -0.25, 0.9,  0.0 },   // RIGHT THIGH
-        { 0.0, 0.0, 0.0, -0.25, 0.4,  0.1 },   // RIGHT KNEE
-        { 0.0, 0.0, 0.0, -0.25, 0.01, 0.0 },  // RIGHT FOOT
-    },
-
-    &TestSkeletonConnectedNodes[0],
-};
-
-
 //******************************************************************************
 // Constructor
 //******************************************************************************
 PLAYER::PLAYER(u32 _Id) :
-    Id(_Id)
+    Id(_Id),
+    Data(null),
+    DataName("/home/doug/asp/aspclient/data/cgc_character_female_basemesh.data")
 {
     // add it to a cyclic list
     if(PlayerList == null) {
@@ -93,35 +50,66 @@ PLAYER::~PLAYER()
 //******************************************************************************
 void PLAYER::Update(float DeltaTime)
 {
+    if(Data == null) {
+        Load(DataName);
+    }
 }
 //******************************************************************************
 void PLAYER::Draw()
 {
+    if(Data == null) return;
+
     glTranslatef(Position.x, Position.y, Position.z);
     
     glColor3f(1.0, 0.0, 0.0);
+    for(int i = 0; i < Data->NumVertices; i++) {
+        glPushMatrix();
+        glTranslatef(Data->Vertices[i].x,
+                     Data->Vertices[i].y,
+                     Data->Vertices[i].z);
+        glutWireSphere(0.1, 1, 1);
+        glPopMatrix();
+    }
+    /*
+    glColor3f(1.0, 0.0, 0.0);
     for(uint i = 0; i < MAX_SKELETON_NODES; i++) {
         glPushMatrix();
-        glTranslatef(TestSkeleton.Nodes[i].posx,
-                     TestSkeleton.Nodes[i].posy,
-                     TestSkeleton.Nodes[i].posz);
+        glTranslatef(Skeleton->Nodes[i].posx,
+                     Skeleton->Nodes[i].posy,
+                     Skeleton->Nodes[i].posz);
         glutWireSphere(0.1, 5, 5);
         glPopMatrix();
     }
 
     glColor3f(1.0, 1.0, 1.0);
     for(int i = 0; ; i++) {
-        CONNECTED_NODE* c = &TestSkeleton.ConnectedNodes[i];
+        CONNECTED_NODE* c = &Skeleton->ConnectedNodes[i];
         if(c->First == MAX_SKELETON_NODES || c->Second == MAX_SKELETON_NODES) break;
         glBegin(GL_LINES);
-        glVertex3d(TestSkeleton.Nodes[c->First].posx,
-                   TestSkeleton.Nodes[c->First].posy,
-                   TestSkeleton.Nodes[c->First].posz);
-        glVertex3d(TestSkeleton.Nodes[c->Second].posx,
-                   TestSkeleton.Nodes[c->Second].posy,
-                   TestSkeleton.Nodes[c->Second].posz);
+        glVertex3d(Skeleton->Nodes[c->First].posx,
+                   Skeleton->Nodes[c->First].posy,
+                   Skeleton->Nodes[c->First].posz);
+        glVertex3d(Skeleton->Nodes[c->Second].posx,
+                   Skeleton->Nodes[c->Second].posy,
+                   Skeleton->Nodes[c->Second].posz);
         glEnd();
     }
+    */
+}
+//******************************************************************************
+inline void pointer_make_absolute(void** x) { *x = (void*)((intptr_t)x + (intptr_t)*x); }
+void PLAYER::Load(const char* Filename)
+{
+    FILE* file = fopen(Filename, "r");
+    assert(file != null);
+    fseek(file, 0L, SEEK_END);
+    size_t filesize = ftell(file);
+    fseek(file, 0L, SEEK_SET);
+    Data = (ObjData*)malloc(filesize); 
+    assert(fread((char*)Data, filesize, 1, file));
+    fclose(file);
+
+    pointer_make_absolute((void**)&Data->Vertices);
 }
 //******************************************************************************
 
