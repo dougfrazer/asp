@@ -62,13 +62,19 @@ void PLAYER::Draw()
     glTranslatef(Position.x, Position.y, Position.z);
     
     glColor3f(1.0, 0.0, 0.0);
-    for(int i = 0; i < Data->NumVertices; i++) {
-        glPushMatrix();
-        glTranslatef(Data->Vertices[i].x,
-                     Data->Vertices[i].y,
-                     Data->Vertices[i].z);
-        glutWireSphere(0.1, 1, 1);
-        glPopMatrix();
+    // Temporary hack until we get support for objects: skip the first object (plane)
+    for(int i = 1; i < Data->NumFaces; i++) {
+        glBegin(GL_TRIANGLES);
+            glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v0 ]);
+            glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v1 ]);
+            glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v2 ]);
+            
+            if(Data->Faces[i].v3 != 0xffff) {
+                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v2 ]);
+                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v3 ]);
+                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Faces[i].v0 ]);
+            }
+        glEnd();
     }
 }
 //******************************************************************************
@@ -85,6 +91,7 @@ void PLAYER::Load(const char* Filename)
     fclose(file);
 
     pointer_make_absolute((void**)&Data->Vertices);
+    pointer_make_absolute((void**)&Data->Faces);
 }
 //******************************************************************************
 

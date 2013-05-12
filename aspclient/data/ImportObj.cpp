@@ -22,11 +22,12 @@ int main(int argc, char** argv)
     assert(file != null);
 
     char buffer[256];
+    // TODO: support objects
     std::list<vertex> VertexList;
-    bool InterestingObject = false;
+    std::list<face> FaceList;
     while(fgets(buffer, 256, file)) {
         char* pch = strtok(buffer, " ");
-        if(*pch == 'v' && InterestingObject) {
+        if(*pch == 'v') {
             vertex NewVert;
             pch = strtok(null, " ");
             NewVert.x = atof(pch);
@@ -36,19 +37,27 @@ int main(int argc, char** argv)
             NewVert.z = atof(pch);
             //printf("Read vertex ( %f, %f, %f )\n", NewVert.x, NewVert.y, NewVert.z);
             VertexList.push_back(NewVert);
-        } else if(*pch == 'o') {
+        } else if(*pch == 'f') {
+            face NewFace;
             pch = strtok(null, " ");
-            if(strcmp(pch, "female_body_basemesh\n") == 0) {
-                //printf("Found an interesting object: %s\n", pch);
-                InterestingObject = true;
+            NewFace.v0 = atoi(pch) - 1;
+            pch = strtok(null, " ");
+            NewFace.v1 = atoi(pch) - 1;
+            pch = strtok(null, " ");
+            NewFace.v2 = atoi(pch) - 1;
+            pch = strtok(null, " ");
+            if(pch == null) {
+                printf("Got a triangle with 3 args at index %ld\n", FaceList.size());
+                NewFace.v3 = -1;
             } else {
-                //printf("Found a not interesting object: %s\n", pch);
-                InterestingObject = false;
+                NewFace.v3 = atoi(pch) - 1;
             }
+            FaceList.push_back(NewFace);
         }
     }
 
     printf("Got %ld vertices...\n", VertexList.size());
+    printf("Got %ld faces...\n", FaceList.size());
 
     fclose(file);
 
@@ -64,25 +73,34 @@ int main(int argc, char** argv)
     size_t BufferSize;
     BufferSize = sizeof(ObjData);
     BufferSize += VertexList.size() * sizeof(vertex);
+    BufferSize += FaceList.size() * sizeof(face);
     void* Data = malloc(BufferSize);
     assert(Data != null);
     
     // Set up the header
     ObjData* Header = (ObjData*)Data;
     Header->NumVertices = VertexList.size();
+    Header->NumFaces = FaceList.size();
     Header->Vertices = (vertex*)(Header + 1);
+    Header->Faces = (face*)(&Header->Vertices[Header->NumVertices]);
 
     // Set up the vertices
     int Index = 0;
     for(std::list<vertex>::iterator it = VertexList.begin(); it != VertexList.end(); it++) {
-        Header->Vertices[Index].x = it->x;
-        Header->Vertices[Index].y = it->y;
-        Header->Vertices[Index].z = it->z;
+        Header->Vertices[Index] = *it;
+        Index++;
+    }
+    
+    // Set up the faces
+    Index = 0;
+    for(std::list<face>::iterator it = FaceList.begin(); it != FaceList.end(); it++) {
+        Header->Faces[Index] = *it;
         Index++;
     }
 
     // Make all pointers relative
     pointer_make_relative((void**)&Header->Vertices);
+    pointer_make_relative((void**)&Header->Faces);
     
     // Write out the file
     printf("Printing binary file to %s\n", OutputFileName);
