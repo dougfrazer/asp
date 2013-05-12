@@ -1,7 +1,7 @@
 
 #include "animation.h"
 
-void TEST_ANIMATION::Update(float DeltaTime)
+void TEST_ANIMATION::Update(float DeltaTime, SKELETON* Skeleton)
 {
 
 }

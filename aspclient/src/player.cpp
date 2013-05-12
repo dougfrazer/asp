@@ -70,31 +70,6 @@ void PLAYER::Draw()
         glutWireSphere(0.1, 1, 1);
         glPopMatrix();
     }
-    /*
-    glColor3f(1.0, 0.0, 0.0);
-    for(uint i = 0; i < MAX_SKELETON_NODES; i++) {
-        glPushMatrix();
-        glTranslatef(Skeleton->Nodes[i].posx,
-                     Skeleton->Nodes[i].posy,
-                     Skeleton->Nodes[i].posz);
-        glutWireSphere(0.1, 5, 5);
-        glPopMatrix();
-    }
-
-    glColor3f(1.0, 1.0, 1.0);
-    for(int i = 0; ; i++) {
-        CONNECTED_NODE* c = &Skeleton->ConnectedNodes[i];
-        if(c->First == MAX_SKELETON_NODES || c->Second == MAX_SKELETON_NODES) break;
-        glBegin(GL_LINES);
-        glVertex3d(Skeleton->Nodes[c->First].posx,
-                   Skeleton->Nodes[c->First].posy,
-                   Skeleton->Nodes[c->First].posz);
-        glVertex3d(Skeleton->Nodes[c->Second].posx,
-                   Skeleton->Nodes[c->Second].posy,
-                   Skeleton->Nodes[c->Second].posz);
-        glEnd();
-    }
-    */
 }
 //******************************************************************************
 inline void pointer_make_absolute(void** x) { *x = (void*)((intptr_t)x + (intptr_t)*x); }
