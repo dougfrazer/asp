@@ -4,10 +4,11 @@
 class ANIMATION
 {
 public:
-    virtual void Update(float DeltaTime) = 0;
+    virtual void Update(float DeltaTime, SKELETON* Skeleton) = 0;
 };
 
 class TEST_ANIMATION : public ANIMATION
 {
-    void Update(float DeltaTime);
+public:
+    void Update(float DeltaTime, SKELETON* Skeleton);
 };
