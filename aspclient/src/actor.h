@@ -28,7 +28,7 @@ public:
     virtual void Update(float DeltaTime) = 0;
     virtual void Draw() = 0;
 
-    SKELETON       Skeleton;
+    SKELETON*      Skeleton;
 
     ANIMATION*     Animation;
     PHYSICS*       Physics;
