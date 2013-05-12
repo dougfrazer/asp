@@ -1,3 +1,26 @@
+//******************************************************************************
+//  Import Object Files
+//  -------------------
+//    This file reads in a .obj file and creates a binary structure representation
+//    of it that we can load in the game.  The binary structure is as follows:
+//
+//     +-------------------------------------------------+
+//     | NumVertices (4 bytes)  |  NumObjects (4 bytes)  | Header
+//     | Vertices* (4 bytes)    |  Objects* (4 bytes)    |
+//     +------------------------+------------------------+
+//     | Vertex Data (sizeof(vertex) * NumVertices)      | Vertex Data
+//     | ...                                             |
+//     +-------------------------------------------------+
+//     | object data (sizeof(object)* NumObjects         | Object Data 
+//     | ...                                             |
+//     +-------------------------------------------------+
+//     | face data (sizeof(face) * NumFaces              | Face Data
+//     | ...                                             |
+//     +-------------------------------------------------+
+//
+//   (c) May 2013
+//   @author Doug Frazer
+//******************************************************************************
 #include "assert.h"
 #include "stdlib.h"
 #include "stdio.h"
@@ -11,6 +34,10 @@
 
 #include "obj.h"
 
+    struct Object {
+        std::list<face> FaceList;
+    };
+
 int main(int argc, char** argv)
 {
     assert(argc == 2);
@@ -22,7 +49,7 @@ int main(int argc, char** argv)
     char buffer[256];
     // TODO: support objects
     std::list<vertex> VertexList;
-    std::list<face> FaceList;
+    std::list<Object> ObjectList;
     while(fgets(buffer, 256, file)) {
         char* pch = strtok(buffer, " ");
         if(*pch == 'v') {
@@ -45,19 +72,28 @@ int main(int argc, char** argv)
             NewFace.v2 = atoi(pch) - 1;
             pch = strtok(null, " ");
             if(pch == null) {
-                printf("Got a triangle with 3 args at index %ld\n", FaceList.size());
+                //printf("Got a triangle with 3 args at index %ld\n", FaceList.size());
                 NewFace.v3 = -1;
             } else {
                 NewFace.v3 = atoi(pch) - 1;
             }
-            FaceList.push_back(NewFace);
+            ObjectList.back().FaceList.push_back(NewFace);
+        } else if(*pch == 'o') {
+            Object o;
+            ObjectList.push_back(o);
         }
     }
-
-    printf("Got %ld vertices...\n", VertexList.size());
-    printf("Got %ld faces...\n", FaceList.size());
-
     fclose(file);
+    
+    int NumVertices = VertexList.size();
+    int NumObjects = ObjectList.size();
+    int NumFaces = 0;
+    for(std::list<Object>::iterator it = ObjectList.begin(); it != ObjectList.end(); it++) {
+        NumFaces += it->FaceList.size();
+    }
+    printf("Got %d vertices...\n", NumVertices);
+    printf("Got %d objects...\n", NumObjects);
+    printf("Got %d faces...\n", NumFaces);
 
     char OutputFileName[256];
     strncpy(OutputFileName, argv[1], strlen(argv[1]) - 3);
@@ -70,17 +106,19 @@ int main(int argc, char** argv)
     printf("Setting up the data\n");
     size_t BufferSize;
     BufferSize = sizeof(ObjData);
-    BufferSize += VertexList.size() * sizeof(vertex);
-    BufferSize += FaceList.size() * sizeof(face);
+    BufferSize += NumVertices * sizeof(vertex);
+    BufferSize += NumObjects * sizeof(object);
+    BufferSize += NumFaces * sizeof(face);
     void* Data = malloc(BufferSize);
     assert(Data != null);
     
     // Set up the header
     ObjData* Header = (ObjData*)Data;
-    Header->NumVertices = VertexList.size();
-    Header->NumFaces = FaceList.size();
+    Header->NumVertices = NumVertices;
+    Header->NumObjects = NumObjects;
+
     Header->Vertices = (vertex*)(Header + 1);
-    Header->Faces = (face*)(&Header->Vertices[Header->NumVertices]);
+    Header->Objects = (object*)(&Header->Vertices[NumVertices]); 
 
     // Set up the vertices
     int Index = 0;
@@ -89,16 +127,29 @@ int main(int argc, char** argv)
         Index++;
     }
     
-    // Set up the faces
+    // Set up the objects
     Index = 0;
-    for(std::list<face>::iterator it = FaceList.begin(); it != FaceList.end(); it++) {
-        Header->Faces[Index] = *it;
+    int FaceCounter = 0;
+    for(std::list<Object>::iterator it = ObjectList.begin(); it != ObjectList.end(); it++) {
+        printf("Beginning object Index=%d with face-offset=%d\n", Index, FaceCounter);
+        Header->Objects[Index].NumFaces = it->FaceList.size();
+        Header->Objects[Index].Faces = (face*)(&Header->Objects[NumObjects]);
+        Header->Objects[Index].Faces = &Header->Objects[Index].Faces[FaceCounter];
+        int FaceIndex = 0;
+        for(std::list<face>::iterator fit = it->FaceList.begin(); fit != it->FaceList.end(); fit++) {
+            Header->Objects[Index].Faces[FaceIndex] = *fit;
+            FaceIndex++;
+        }
         Index++;
+        FaceCounter += it->FaceList.size();
     }
 
     // Make all pointers relative
+    for(int i = 0; i < Header->NumObjects; i++) {
+        pointer_make_relative((void**)&Header->Objects[i].Faces);
+    }
     pointer_make_relative((void**)&Header->Vertices);
-    pointer_make_relative((void**)&Header->Faces);
+    pointer_make_relative((void**)&Header->Objects);
     
     // Write out the file
     printf("Printing binary file to %s\n", OutputFileName);
