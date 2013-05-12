@@ -77,6 +77,7 @@ static void Main_Init()
     Keyboard_Init();
     Network_Init();
     World_Init();
+    Camera_Init();
 }
 //*******************************************************************************
 static void Main_Update(float DeltaTime)

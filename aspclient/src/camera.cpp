@@ -11,21 +11,28 @@
 
 #include "camera.h"
 #include "player.h"
+#include "keyboard.h"
 
 #define PI 3.14159265
 
 static CAMERA Camera;
+
+void Camera_ZoomIn() { Camera.ZoomFactor += 1; }
+void Camera_ZoomOut() { Camera.ZoomFactor -= 1; }
 
 //*****************************************************************************
 // Public functions
 //*****************************************************************************
 void CAMERA::Init()
 {
+    ZoomFactor = 10.0;
     MouseState = GLUT_UP;
     Previous.x = 0;
     Previous.y = 0;
     Current.x = 0;
     Current.y = 0;
+    Keyboard_RegisterEvent('z', Camera_ZoomIn);
+    Keyboard_RegisterEvent('x', Camera_ZoomOut);
 }
 //*****************************************************************************
 void CAMERA::Update()
@@ -51,7 +58,7 @@ void CAMERA::Draw()
                    PlayerPosition.x, PlayerPosition.y, PlayerPosition.z, 
                    0.0, 1.0, 0.0 );
     } else {
-        gluLookAt( 0.0, 10.0, 10.0, 
+        gluLookAt( 0.0, ZoomFactor, ZoomFactor, 
                    0.0, 0.0, 0.0, 
                    0.0, 1.0, 0.0 );
     }
@@ -70,9 +77,9 @@ vector4 CAMERA::GetLocation()
     vector4 PlayerPosition;
     vector4 Location = { 0.0, 0.0, 0.0, 0.0 };
     if(Player_GetPrimaryPlayerPosition(&PlayerPosition)) {
-        Location.x = PlayerPosition.x + sin(Angle*PI/180)*10.0;
-        Location.y = PlayerPosition.y + 10.0;
-        Location.z = PlayerPosition.z + cos(Angle*PI/180)*10.0;
+        Location.x = PlayerPosition.x + sin(Angle*PI/180)*ZoomFactor;
+        Location.y = PlayerPosition.y + ZoomFactor;
+        Location.z = PlayerPosition.z + cos(Angle*PI/180)*ZoomFactor;
     }
     return Location;
 }

@@ -21,6 +21,8 @@ public:
     vector4 GetLocation();
     float GetAngle() { return Angle; }
 
+    float ZoomFactor;
+
 private:
     float Angle;
     vector4 Focus;
@@ -33,6 +35,7 @@ private:
     MOUSE_CLICK_LOCATION Current;
     MOUSE_CLICK_LOCATION Previous;
     int MouseState;
+
 };
 
 void Camera_Update();
