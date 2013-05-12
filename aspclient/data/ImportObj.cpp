@@ -11,8 +11,6 @@
 
 #include "obj.h"
 
-inline void pointer_make_relative(void** x) { *x = (void*)((intptr_t)*x - (intptr_t)x); }
-
 int main(int argc, char** argv)
 {
     assert(argc == 2);

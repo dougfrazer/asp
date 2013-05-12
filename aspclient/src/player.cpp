@@ -78,7 +78,6 @@ void PLAYER::Draw()
     }
 }
 //******************************************************************************
-inline void pointer_make_absolute(void** x) { *x = (void*)((intptr_t)x + (intptr_t)*x); }
 void PLAYER::Load(const char* Filename)
 {
     FILE* file = fopen(Filename, "r");
