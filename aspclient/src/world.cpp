@@ -21,6 +21,8 @@
 static void World_PrintText(float, float, void*, char*, float, float, float, float);
 static void World_DrawDebugText();
 
+static const float WORLD_LENGTH = 50;
+
 //*****************************************************************************
 void World_Init()
 {
@@ -35,11 +37,21 @@ void World_Draw()
     // Draw Ground
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_QUADS);
-        glVertex3f(-5.0, 0.0, -5.0);
-        glVertex3f(-5.0, 0.0,  5.0);
-        glVertex3f( 5.0, 0.0,  5.0);
-        glVertex3f( 5.0, 0.0, -5.0);
+        glVertex3f(-WORLD_LENGTH, 0.0, -WORLD_LENGTH);
+        glVertex3f(-WORLD_LENGTH, 0.0,  WORLD_LENGTH);
+        glVertex3f( WORLD_LENGTH, 0.0,  WORLD_LENGTH);
+        glVertex3f( WORLD_LENGTH, 0.0, -WORLD_LENGTH);
     glEnd();
+
+    glColor3f(0.0, 0.0, 0.0);
+    for(float i = -WORLD_LENGTH; i < WORLD_LENGTH; i+= 10) {
+        for(float j = -WORLD_LENGTH; j < WORLD_LENGTH; j+= 10) {
+            glBegin(GL_LINES);
+                glVertex3f(i, 0, j);
+                glVertex3f(j, 0, i);
+            glEnd();
+        }
+    }
 
     World_DrawDebugText();
 }
