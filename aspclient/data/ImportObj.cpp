@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     std::list<Object> ObjectList;
     while(fgets(buffer, 256, file)) {
         char* pch = strtok(buffer, " ");
-        if(*pch == 'v') {
+        if(strcmp(pch, "v") == 0) {
             vertex NewVert;
             pch = strtok(null, " ");
             NewVert.x = atof(pch);
@@ -62,25 +62,32 @@ int main(int argc, char** argv)
             NewVert.z = atof(pch);
             //printf("Read vertex ( %f, %f, %f )\n", NewVert.x, NewVert.y, NewVert.z);
             VertexList.push_back(NewVert);
-        } else if(*pch == 'f') {
+        } else if(strcmp(pch, "f") == 0) {
+            // TODO: support f int/int/int ... meaning vertex/texture/normal
             face NewFace;
             pch = strtok(null, " ");
             NewFace.v0 = atoi(pch) - 1;
             pch = strtok(null, " ");
             NewFace.v1 = atoi(pch) - 1;
             pch = strtok(null, " ");
-            NewFace.v2 = atoi(pch) - 1;
-            pch = strtok(null, " ");
             if(pch == null) {
-                //printf("Got a triangle with 3 args at index %ld\n", FaceList.size());
+                NewFace.v2 = -1;
                 NewFace.v3 = -1;
             } else {
-                NewFace.v3 = atoi(pch) - 1;
+                NewFace.v2 = atoi(pch) - 1;
+                pch = strtok(null, " ");
+                if(pch == null) {
+                    NewFace.v3 = -1;
+                } else {
+                    NewFace.v3 = atoi(pch) - 1;
+                }
             }
             ObjectList.back().FaceList.push_back(NewFace);
-        } else if(*pch == 'o') {
+        } else if(strcmp(pch, "o") == 0) {
             Object o;
             ObjectList.push_back(o);
+        } else if(strcmp(pch, "vt") == 0) {
+            // TODO
         }
     }
     fclose(file);
@@ -91,6 +98,7 @@ int main(int argc, char** argv)
     for(std::list<Object>::iterator it = ObjectList.begin(); it != ObjectList.end(); it++) {
         NumFaces += it->FaceList.size();
     }
+    assert(NumVertices < 0xffff); // Need to use u32 not u16 for faces
     printf("Got %d vertices...\n", NumVertices);
     printf("Got %d objects...\n", NumObjects);
     printf("Got %d faces...\n", NumFaces);
