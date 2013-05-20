@@ -24,7 +24,7 @@ static PLAYER* PlayerList = null;
 PLAYER::PLAYER(u32 _Id) :
     Id(_Id),
     Data(null),
-    DataName("/home/doug/asp/aspclient/data/cgc_character_female_basemesh.data")
+    DataName("/home/doug/asp/aspclient/data/stick_figure.data")
 {
     // add it to a cyclic list
     if(PlayerList == null) {
@@ -65,17 +65,24 @@ void PLAYER::Draw()
     for(int i = 0; i < Data->NumObjects; i++) {
         glColor3f(r,g,b);
         for(int j = 0; j < Data->Objects[i].NumFaces; j++) {
-            glBegin(GL_TRIANGLES);
-                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v0 ]);
-                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v1 ]);
-                glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v2 ]);
-                
-                if(Data->Objects[i].Faces[j].v3 != (u16)-1) {
-                    glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v2 ]);
-                    glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v3 ]);
+            if(Data->Objects[i].Faces[j].v2 == (u16)-1) {
+                glBegin(GL_LINES);
+                    glVertex3fv((GLfloat*)(&Data->Vertices[ Data->Objects[i].Faces[j].v0 ]));
+                    glVertex3fv((GLfloat*)(&Data->Vertices[ Data->Objects[i].Faces[j].v1 ]));
+                glEnd();
+            } else {
+                glBegin(GL_TRIANGLES);
                     glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v0 ]);
-                }
-            glEnd();
+                    glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v1 ]);
+                    glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v2 ]);
+                    
+                    if(Data->Objects[i].Faces[j].v3 != (u16)-1) {
+                        glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v2 ]);
+                        glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v3 ]);
+                        glVertex3fv((GLfloat*)&Data->Vertices[ Data->Objects[i].Faces[j].v0 ]);
+                    }
+                glEnd();
+            }
         }
         r -= clamp(0.1, 0.0, 1.0);
         g += clamp(0.1, 0.0, 1.0);
