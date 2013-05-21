@@ -5,6 +5,9 @@
 // (c) May 2013
 //******************************************************************************
 
+#include <cstdlib>
+#include <cstring>
+
 #include "player.h"
 #include "../data/obj.h"
 #include "stdio.h"
@@ -23,8 +26,7 @@ static PLAYER* PlayerList = null;
 //******************************************************************************
 PLAYER::PLAYER(u32 _Id) :
     Id(_Id),
-    Data(null),
-    DataName("/home/doug/asp/aspclient/data/stick_figure.data")
+    Data(null)
 {
     // add it to a cyclic list
     if(PlayerList == null) {
@@ -37,11 +39,25 @@ PLAYER::PLAYER(u32 _Id) :
         PlayerList->Prev->Next = this;
         PlayerList->Prev = this;
     }
+    
+    char* data_path;
+    data_path = getenv ("ASPCLIENT_DATA");
+    if (!data_path) {
+        DataName = strdup("data/stick_figure.data");
+    } else {
+        DataName = strdup(data_path);
+    }
+      
+      
+
 }
 //******************************************************************************
 PLAYER::~PLAYER()
 {
     // TODO: remove from PlayerList
+    if (DataName) {
+        free(DataName);
+    }
 }
 //******************************************************************************
 

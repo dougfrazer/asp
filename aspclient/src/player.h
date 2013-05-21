@@ -29,7 +29,7 @@ public:
 private:
     void Load(const char* Filename);
     ObjData* Data;
-    const char* DataName; 
+    char* DataName; 
 };
 
 void Player_SetPrimaryPlayer(u32 UserId);
