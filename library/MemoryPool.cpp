@@ -11,9 +11,9 @@
 
 //******************************************************************************
 MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize) :
-    Segments(null),
     BlockSize(_BlockSize),
-    AllocationSize(_AllocationSize)
+    AllocationSize(_AllocationSize),
+    Segments(null)
 {
     // Even this is far too generous of an assertion
     assert( BlockSize < AllocationSize / 2 );
@@ -81,6 +81,8 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
     }
     Block = (BLOCK*)( (u8*)(NewSegment->Memory) + BlockSize*( NumBlocks - 1 ) );
     Block->Next = null;
+
+    return NewSegment;
 }
 //******************************************************************************
 MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
