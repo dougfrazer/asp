@@ -10,14 +10,20 @@
 #include "stdlib.h"
 
 //******************************************************************************
-MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize) :
-    BlockSize(_BlockSize),
-    AllocationSize(_AllocationSize),
-    Segments(null)
+MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
 {
+    BlockSize      = max(sizeof(BLOCK), _BlockSize);
+    AllocationSize = _AllocationSize;
+    Segments       = null;
+    FreeSegments   = null;
+    NumBlocks      = 0;
+    NumSegments    = 0;
+    
     // Even this is far too generous of an assertion
     assert( BlockSize < AllocationSize / 2 );
-    assert( BlockSize > sizeof(BLOCK) );
+    assert( _BlockSize > sizeof(BLOCK) );
+    
+    Segments       = GetNewSegment();
 }
 //******************************************************************************
 MEMORY_POOL::~MEMORY_POOL()
@@ -31,17 +37,17 @@ MEMORY_POOL::~MEMORY_POOL()
 //******************************************************************************
 void* MEMORY_POOL::GetBlock()
 {
-    SEGMENT* Segment = Segments;
+    SEGMENT* Segment = FreeSegments;
     if(Segment->FreeBlock == null) {
-        if(FreeSegments != null) {
-            Segment = FreeSegments;
-            FreeSegments = FreeSegments->NextFreeSegment;
-        } else {
+        FreeSegments = FreeSegments->NextFreeSegment;
+        Segment = FreeSegments;
+        if(Segment == null) {
             Segment = GetNewSegment();
         }
     }
     BLOCK* ret = Segment->FreeBlock;
     Segment->FreeBlock = Segment->FreeBlock->Next;
+    NumBlocks++;
     return ret;
 }
 //******************************************************************************
@@ -52,9 +58,9 @@ void MEMORY_POOL::FreeBlock(void* ptr)
     Segment->FreeBlock = (BLOCK*)ptr;
     ((BLOCK*)(Segment->FreeBlock))->Next = PrevBlock;
 
-    SEGMENT* Prev = FreeSegments;
-    FreeSegments = Segment;
-    Segments->NextFreeSegment = Prev;
+    AddToFreeList(Segment);
+
+    NumBlocks--;
 }
 //******************************************************************************
 
@@ -65,7 +71,7 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
 {
     SEGMENT* NewSegment = (SEGMENT*)malloc( AllocationSize );
     NewSegment->Memory = (void*)alignup( (u8*)(NewSegment) + sizeof(SEGMENT), BlockSize );
-    NewSegment->FreeBlock = null;
+    NewSegment->FreeBlock = (BLOCK*)NewSegment->Memory;
     NewSegment->NextFreeSegment = null;
     NewSegment->Left = null;
     NewSegment->Right = null;
@@ -81,6 +87,10 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
     }
     Block = (BLOCK*)( (u8*)(NewSegment->Memory) + BlockSize*( NumBlocks - 1 ) );
     Block->Next = null;
+    
+    AddToFreeList(NewSegment);
+
+    NumSegments++;
 
     return NewSegment;
 }
@@ -90,11 +100,11 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
     SEGMENT* s = Segments;
     u32 ActualAllocationSize = AllocationSize - alignup( sizeof(SEGMENT), BlockSize );
     while( s != null ) {
-        if( s->Memory <= ptr && s->Memory > (u8*)ptr + ActualAllocationSize ) {
+        if( s->Memory <= ptr && (u8*)(s->Memory) + ActualAllocationSize > ptr ) {
             assert( ( (u8*)(s->Memory) - (u8*)ptr ) % BlockSize == 0 ); 
             return s;
         }
-        s = s->Memory < ptr ? s->Left : s->Right;
+        s = s->Memory > ptr ? s->Left : s->Right;
     }
     return null;
 }
@@ -109,5 +119,15 @@ void MEMORY_POOL::InsertIntoTree(SEGMENT* Segment)
         s = Segment->Memory < (*s)->Left ? &((*s)->Left) : &((*s)->Right);
     }
     *s = Segment;
+}
+//******************************************************************************
+void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
+{
+    SEGMENT** Prev = &FreeSegments;
+    while( *Prev != null ) {
+        if( *Prev == Segment ) return;
+        *Prev = (*Prev)->NextFreeSegment;
+    }
+    (*Prev) = Segment;
 }
 //******************************************************************************

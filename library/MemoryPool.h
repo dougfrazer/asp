@@ -42,10 +42,15 @@ private:
     SEGMENT*  GetNewSegment   ( void );
     void      InsertIntoTree  ( SEGMENT* Segment );
     SEGMENT*  FindSegment     ( void* ptr );
+    void      AddToFreeList   ( SEGMENT* Segment );
     
     // Data
     u32      BlockSize;
     u32      AllocationSize;
     SEGMENT* Segments;
     SEGMENT* FreeSegments;
+
+    // Debug data
+    int      NumBlocks;
+    int      NumSegments;
 };
