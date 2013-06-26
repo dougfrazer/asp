@@ -41,7 +41,7 @@ int main()
     Pool.FreeBlock(Blah);
     printf("Passed\n");
 
-    static const uint NUM_STUFF = 10000;
+/*    static const uint NUM_STUFF = 10000;
     printf("Starting test 5: randomly create and free %d times...", NUM_STUFF*10);
     STUFF* LoadsOfStuff[NUM_STUFF];
     Memset( &LoadsOfStuff[0], '\0', sizeof(LoadsOfStuff) );
@@ -60,6 +60,13 @@ int main()
                 LoadsOfStuff[index] = null;
             }
         }
+    }
+    printf("Passed\n");
+*/
+
+    printf("Starting test 6: allocate a ton of stuff...");
+    for(int i = 0; i < 1000000; i++) {
+        Blah = (STUFF*)Pool.GetBlock();
     }
     printf("Passed\n");
 

@@ -36,13 +36,20 @@ private:
         void*    Memory;
         BLOCK*   FreeBlock;
         SEGMENT* NextFreeSegment;
+        
+        // Tree Data
+        SEGMENT* Parent;
+        int      BalanceFactor;
         SEGMENT* Left;
         SEGMENT* Right;
     };
     SEGMENT*  GetNewSegment   ( void );
-    void      InsertIntoTree  ( SEGMENT* Segment );
     SEGMENT*  FindSegment     ( void* ptr );
     void      AddToFreeList   ( SEGMENT* Segment );
+    
+    void      InsertIntoTree  ( SEGMENT* Segment );
+    void      RotateLeft      ( SEGMENT* Segment );
+    void      RotateRight     ( SEGMENT* Segment );
     
     // Data
     u32      BlockSize;
@@ -53,4 +60,5 @@ private:
     // Debug data
     int      NumBlocks;
     int      NumSegments;
+    int      MaxDepth;
 };

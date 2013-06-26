@@ -8,6 +8,7 @@
 #include "MemoryPool.h"
 
 #include "stdlib.h"
+#include "stdio.h"
 
 //******************************************************************************
 MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
@@ -18,6 +19,7 @@ MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
     FreeSegments   = null;
     NumBlocks      = 0;
     NumSegments    = 0;
+    MaxDepth       = 0;
     
     // Even this is far too generous of an assertion
     assert( BlockSize < AllocationSize / 2 );
@@ -54,9 +56,13 @@ void* MEMORY_POOL::GetBlock()
 void MEMORY_POOL::FreeBlock(void* ptr)
 {
     SEGMENT* Segment = FindSegment( ptr );
+    // TODO: check for cyclic lists more completely?
+    if(ptr == Segment->FreeBlock) {
+        return;
+    }
     BLOCK* PrevBlock = Segment->FreeBlock;
     Segment->FreeBlock = (BLOCK*)ptr;
-    ((BLOCK*)(Segment->FreeBlock))->Next = PrevBlock;
+    Segment->FreeBlock->Next = PrevBlock;
 
     AddToFreeList(Segment);
 
@@ -75,6 +81,8 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
     NewSegment->NextFreeSegment = null;
     NewSegment->Left = null;
     NewSegment->Right = null;
+    NewSegment->Parent = null;
+    NewSegment->BalanceFactor = 0;
     InsertIntoTree(NewSegment);
 
     BLOCK* Block = null;
@@ -112,13 +120,39 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
 void MEMORY_POOL::InsertIntoTree(SEGMENT* Segment)
 {
     assert(Segment->Memory != null);
+    SEGMENT* Parent = null;
     SEGMENT** s = &Segments;
+    int Depth = 0;
     while( *s != null ) {
-        // TODO: this binary search will be heavily weighted to one side because
-        //       allocation will all be in sequential address order
+        Parent = *s;
+        Depth++;
         s = Segment->Memory < (*s)->Left ? &((*s)->Left) : &((*s)->Right);
     }
     *s = Segment;
+    Segment->Parent = Parent;
+    if(Depth > MaxDepth) MaxDepth = Depth;
+
+    // rotate the tree to keep it balanced
+    SEGMENT* p = Parent;
+    if(Parent != null) {
+        if(*s == Parent->Left) {
+            while(p != null) {
+                p->BalanceFactor++;
+                p = p->Parent;
+            }
+            if( Parent->Parent != null && Parent->Parent->BalanceFactor > 1 ) {
+                RotateRight(Parent->Parent);
+            }
+        } else {
+            while(p != null) {
+                p->BalanceFactor--;
+                p = p->Parent;
+            }
+            if( Parent->Parent != null && Parent->Parent->BalanceFactor < -1 ) {
+                RotateLeft(Parent->Parent);
+            }
+        }
+    }
 }
 //******************************************************************************
 void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
@@ -129,5 +163,67 @@ void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
         *Prev = (*Prev)->NextFreeSegment;
     }
     (*Prev) = Segment;
+}
+//******************************************************************************
+void MEMORY_POOL::RotateLeft(SEGMENT* Segment)
+{
+    printf("Rotating Left (%d segments, %d blocks, MaxDepth=%d)\n", NumSegments, NumBlocks, MaxDepth);
+    assert(Segment->Right != null);
+    SEGMENT*  Copy       = Segment;
+    SEGMENT*  RightRight = Segment->Right->Right;
+    SEGMENT*  RightLeft  = Segment->Right->Left;
+    SEGMENT*  Left       = Segment->Left;
+
+    if(Segment->Parent == null) {
+        Segments = Segment->Right;
+    } else {
+        if(Segment->Parent->Left == Segment) {
+            Segment->Parent->Left  = Segment->Right;
+        } else if(Segment->Parent->Right == Segment) {
+            Segment->Parent->Right = Segment->Right;
+        } else {
+            assert(false);
+        }
+    }
+    Segment                = Segment->Right;
+    Segment->Left          = Copy;
+    Segment->Parent        = Copy->Parent;
+    Segment->Left->Parent  = Segment;
+    Segment->Left->Left    = Left;
+    Segment->Left->Right   = RightLeft;
+    Segment->Right         = RightRight;
+    Segment->BalanceFactor++;
+    Segment->Left->BalanceFactor++;
+}
+//******************************************************************************
+void MEMORY_POOL::RotateRight(SEGMENT* Segment)
+{
+    printf("Rotating Right (%d segments, %d blocks, MaxDepth=%d)\n", NumSegments, NumBlocks, MaxDepth);
+    assert(Segment->Left != null);
+    SEGMENT*  Copy       = Segment;
+    SEGMENT*  LeftLeft   = Segment->Left->Left;
+    SEGMENT*  LeftRight  = Segment->Left->Right;
+    SEGMENT*  Right      = Segment->Right;
+
+    if(Segment->Parent == null) {
+        Segments = Segment->Left;
+    } else {
+        if(Segment->Parent->Left == Segment) {
+            Segment->Parent->Left  = Segment->Right;
+        } else if(Segment->Parent->Right == Segment) {
+            Segment->Parent->Right = Segment->Right;
+        } else {
+            assert(false);
+        }
+    }
+    Segment                = Segment->Left;
+    Segment->Right         = Copy;
+    Segment->Parent        = Copy->Parent;
+    Segment->Right->Parent = Segment;
+    Segment->Right->Left   = LeftRight;
+    Segment->Right->Right  = Right;
+    Segment->Left          = LeftLeft;
+    Segment->BalanceFactor--;
+    Segment->Right->BalanceFactor--;
 }
 //******************************************************************************
