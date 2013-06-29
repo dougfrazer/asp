@@ -24,13 +24,15 @@ MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
     // Even this is far too generous of an assertion
     assert( BlockSize < AllocationSize / 2 );
     assert( _BlockSize > sizeof(BLOCK) );
-    
+
     Segments       = GetNewSegment();
+
+    DataSize = AllocationSize - alignup( sizeof(SEGMENT), BlockSize );
 }
 //******************************************************************************
 MEMORY_POOL::~MEMORY_POOL()
 {
-    // pre-order traverse the BST and free
+    // free the memory
 }
 //******************************************************************************
 
@@ -81,8 +83,6 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
     NewSegment->NextFreeSegment = null;
     NewSegment->Left = null;
     NewSegment->Right = null;
-    NewSegment->Parent = null;
-    NewSegment->BalanceFactor = 0;
     InsertIntoTree(NewSegment);
 
     BLOCK* Block = null;
@@ -106,53 +106,14 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
 MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
 {
     SEGMENT* s = Segments;
-    u32 ActualAllocationSize = AllocationSize - alignup( sizeof(SEGMENT), BlockSize );
     while( s != null ) {
-        if( s->Memory <= ptr && (u8*)(s->Memory) + ActualAllocationSize > ptr ) {
-            assert( ( (u8*)(s->Memory) - (u8*)ptr ) % BlockSize == 0 ); 
+        if( s->Memory <= ptr && ( (u8*)(s->Memory) + DataSize ) > ptr ) {
+            assert( ( (u8*)ptr - (u8*)(s->Memory)  ) % BlockSize == 0 ); 
             return s;
         }
-        s = s->Memory > ptr ? s->Left : s->Right;
+        s = ptr < s->Memory ? s->Left : s->Right;
     }
     return null;
-}
-//******************************************************************************
-void MEMORY_POOL::InsertIntoTree(SEGMENT* Segment)
-{
-    assert(Segment->Memory != null);
-    SEGMENT* Parent = null;
-    SEGMENT** s = &Segments;
-    int Depth = 0;
-    while( *s != null ) {
-        Parent = *s;
-        Depth++;
-        s = Segment->Memory < (*s)->Left ? &((*s)->Left) : &((*s)->Right);
-    }
-    *s = Segment;
-    Segment->Parent = Parent;
-    if(Depth > MaxDepth) MaxDepth = Depth;
-
-    // rotate the tree to keep it balanced
-    SEGMENT* p = Parent;
-    if(Parent != null) {
-        if(*s == Parent->Left) {
-            while(p != null) {
-                p->BalanceFactor++;
-                p = p->Parent;
-            }
-            if( Parent->Parent != null && Parent->Parent->BalanceFactor > 1 ) {
-                RotateRight(Parent->Parent);
-            }
-        } else {
-            while(p != null) {
-                p->BalanceFactor--;
-                p = p->Parent;
-            }
-            if( Parent->Parent != null && Parent->Parent->BalanceFactor < -1 ) {
-                RotateLeft(Parent->Parent);
-            }
-        }
-    }
 }
 //******************************************************************************
 void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
@@ -165,65 +126,167 @@ void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
     (*Prev) = Segment;
 }
 //******************************************************************************
+void MEMORY_POOL::InsertIntoTree(SEGMENT* Segment)
+{
+    assert(Segment->Memory != null);
+    SEGMENT** s = &Segments;
+    SEGMENT* p = null;
+    int Depth = 0;
+    while( *s != null ) {
+        p = *s;
+        s = Segment->Memory < (*s)->Memory ? &((*s)->Left) : &((*s)->Right);
+        //s = Segment < (*s)->Left ? &((*s)->Left) : &((*s)->Right);
+        Depth++;
+    }
+    *s = Segment;
+    (*s)->Height = 1;
+    (*s)->Parent = p;
+    if(Depth > MaxDepth) MaxDepth = Depth;
+
+    while( p != null ) {
+        p->Height = max( Height(p->Left), Height(p->Right) ) + 1;
+        int balance = GetBalanceFactor(p);
+        if( balance > 1 ) {
+            if( Segment < (p->Left) ) { // Left Left case
+                RotateRight(p);
+            } else { // Left Right case
+                RotateLeft(p->Left);
+                RotateRight(p);
+            }
+        } else if( balance < -1 ) {
+            if( Segment < (p->Left) ) { // Right Left case
+                RotateRight(p->Right);
+                RotateLeft(p);
+            } else { // Right Right case
+                RotateLeft(p);
+            }
+        }
+        p = p->Parent;
+    }
+}
+//******************************************************************************
 void MEMORY_POOL::RotateLeft(SEGMENT* Segment)
 {
-    printf("Rotating Left (%d segments, %d blocks, MaxDepth=%d)\n", NumSegments, NumBlocks, MaxDepth);
     assert(Segment->Right != null);
-    SEGMENT*  Copy       = Segment;
-    SEGMENT*  RightRight = Segment->Right->Right;
-    SEGMENT*  RightLeft  = Segment->Right->Left;
-    SEGMENT*  Left       = Segment->Left;
+    SEGMENT*  Root       = Segment;
+    SEGMENT*  Pivot      = Segment->Right;
 
-    if(Segment->Parent == null) {
-        Segments = Segment->Right;
+    if( Root->Parent == null ) {
+        Segments = Pivot;
     } else {
-        if(Segment->Parent->Left == Segment) {
-            Segment->Parent->Left  = Segment->Right;
-        } else if(Segment->Parent->Right == Segment) {
-            Segment->Parent->Right = Segment->Right;
+        if( Root->Parent->Left == Root ) {
+            Root->Parent->Left = Pivot;
+        } else if( Root->Parent->Right == Root ) {
+            Root->Parent->Right = Pivot;
         } else {
             assert(false);
         }
     }
-    Segment                = Segment->Right;
-    Segment->Left          = Copy;
-    Segment->Parent        = Copy->Parent;
-    Segment->Left->Parent  = Segment;
-    Segment->Left->Left    = Left;
-    Segment->Left->Right   = RightLeft;
-    Segment->Right         = RightRight;
-    Segment->BalanceFactor++;
-    Segment->Left->BalanceFactor++;
+
+    Root->Right          = Pivot->Left;
+    Pivot->Left          = Root;
+
+    Pivot->Parent        = Root->Parent;
+    Root->Parent         = Pivot;
+    if( Root->Right != null ) {
+        Root->Right->Parent  = Root;
+    }
+
+    Root->Height = max( Height(Root->Left), Height(Root->Right) ) + 1;
+    Pivot->Height = max( Height(Pivot->Left), Height(Pivot->Right) ) + 1;
 }
 //******************************************************************************
 void MEMORY_POOL::RotateRight(SEGMENT* Segment)
 {
-    printf("Rotating Right (%d segments, %d blocks, MaxDepth=%d)\n", NumSegments, NumBlocks, MaxDepth);
     assert(Segment->Left != null);
-    SEGMENT*  Copy       = Segment;
-    SEGMENT*  LeftLeft   = Segment->Left->Left;
-    SEGMENT*  LeftRight  = Segment->Left->Right;
-    SEGMENT*  Right      = Segment->Right;
+    SEGMENT*  Root       = Segment;
+    SEGMENT*  Pivot      = Segment->Left;
 
-    if(Segment->Parent == null) {
-        Segments = Segment->Left;
+    if( Root->Parent == null ) {
+        Segments = Pivot;
     } else {
-        if(Segment->Parent->Left == Segment) {
-            Segment->Parent->Left  = Segment->Right;
-        } else if(Segment->Parent->Right == Segment) {
-            Segment->Parent->Right = Segment->Right;
+        if( Root->Parent->Left == Root ) {
+            Root->Parent->Left = Pivot;
+        } else if( Root->Parent->Right == Root ) {
+            Root->Parent->Right = Pivot;
         } else {
             assert(false);
         }
     }
-    Segment                = Segment->Left;
-    Segment->Right         = Copy;
-    Segment->Parent        = Copy->Parent;
-    Segment->Right->Parent = Segment;
-    Segment->Right->Left   = LeftRight;
-    Segment->Right->Right  = Right;
-    Segment->Left          = LeftLeft;
-    Segment->BalanceFactor--;
-    Segment->Right->BalanceFactor--;
+
+    Root->Left            = Pivot->Right;                  
+    Pivot->Right          = Root;
+
+    Pivot->Parent         = Root->Parent;
+    Root->Parent          = Pivot;
+    if( Root->Left != null ) {
+        Root->Left->Parent    = Root;
+    }
+
+    Root->Height = max( Height(Root->Left), Height(Root->Right) ) + 1;
+    Pivot->Height = max( Height(Pivot->Left), Height(Pivot->Right) ) + 1;
+}
+//******************************************************************************
+int MEMORY_POOL::GetBalanceFactor(SEGMENT* s)
+{
+    if( s == null ) return 0;
+    return Height(s->Left) - Height(s->Right);
+}
+//******************************************************************************
+int MEMORY_POOL::Height(SEGMENT* x)
+{
+    return x == null ? 0 : x->Height;
+}
+//******************************************************************************
+
+
+
+
+
+
+//******************************************************************************
+// Test code
+//******************************************************************************
+void MEMORY_POOL::TestInternal()
+{
+#if 0
+    assert(Segments == null);
+
+    const uint NUM_TEST_SEGS = 100;
+    SEGMENT* TestSegs[NUM_TEST_SEGS];
+    for(int i = 1; i < NUM_TEST_SEGS; i++) {
+        TestSegs[i] = new SEGMENT();
+        TestSegs[i]->Memory = (void*)i;
+    }
+    
+    // Test Left-Left rotation
+    InsertIntoTree(TestSegs[30]);
+    InsertIntoTree(TestSegs[40]);
+    InsertIntoTree(TestSegs[50]);
+
+    // Test Right-Right rotation
+    InsertIntoTree(TestSegs[20]);
+    InsertIntoTree(TestSegs[10]);
+
+    // Test Right-Left rotation
+    InsertIntoTree(TestSegs[25]);
+
+    // Test Left-Right rotation
+    InsertIntoTree(TestSegs[45]);
+    InsertIntoTree(TestSegs[44]);
+    InsertIntoTree(TestSegs[42]);
+    InsertIntoTree(TestSegs[41]);
+
+    assert((int)Segments->Memory == 30);
+    assert((int)Segments->Left->Memory == 20);
+    assert((int)Segments->Left->Left->Memory == 10);
+    assert((int)Segments->Left->Right->Memory == 25);
+    assert((int)Segments->Right->Memory == 42);
+    assert((int)Segments->Right->Left->Memory == 40);
+    assert((int)Segments->Right->Left->Right->Memory == 41);
+    assert((int)Segments->Right->Right->Memory == 45);
+    assert((int)Segments->Right->Right->Left->Memory == 44);
+    assert((int)Segments->Right->Right->Right->Memory == 50);
+#endif
 }
 //******************************************************************************

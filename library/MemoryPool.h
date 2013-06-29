@@ -1,4 +1,7 @@
 
+#ifndef __MEMORY_POOL_H__
+#define __MEMORY_POOL_H__
+
 #include "ASPLib.h"
 
 class MEMORY_POOL
@@ -38,8 +41,8 @@ private:
         SEGMENT* NextFreeSegment;
         
         // Tree Data
-        SEGMENT* Parent;
-        int      BalanceFactor;
+		int      Height;
+		SEGMENT* Parent;
         SEGMENT* Left;
         SEGMENT* Right;
     };
@@ -50,15 +53,21 @@ private:
     void      InsertIntoTree  ( SEGMENT* Segment );
     void      RotateLeft      ( SEGMENT* Segment );
     void      RotateRight     ( SEGMENT* Segment );
+	int       GetBalanceFactor( SEGMENT* Segment );
+	int       Height          ( SEGMENT* Segment );
     
     // Data
     u32      BlockSize;
     u32      AllocationSize;
     SEGMENT* Segments;
     SEGMENT* FreeSegments;
+	u32      DataSize;
 
     // Debug data
     int      NumBlocks;
     int      NumSegments;
     int      MaxDepth;
+	void     TestInternal();
 };
+
+#endif
