@@ -3,6 +3,7 @@
 
 #include "stdlib.h"
 #include "time.h"
+#include "string.h"
 
 int main()
 {
@@ -67,7 +68,7 @@ int main()
 	printf( "%s", Buffer );
 	{
 		MEMORY_POOL Pool(sizeof(STUFF), 1024);
-		Memset( &LoadsOfStuff[0], '\0', NUM_STUFF*sizeof(STUFF) );
+		memset( &LoadsOfStuff[0], '\0', NUM_STUFF*sizeof(STUFF) );
 		for(int i = 0; i < NUM_STUFF * 10; i++) {
 			int index = rand()%NUM_STUFF;
 			if(LoadsOfStuff[index] == null) {
@@ -84,7 +85,7 @@ int main()
 	printf( "%s", Buffer );
 	{
 		MEMORY_POOL Pool(sizeof(STUFF), 1024);
-		Memset( &LoadsOfStuff[0], '\0', sizeof(STUFF)*NUM_STUFF );
+		memset( &LoadsOfStuff[0], '\0', sizeof(STUFF)*NUM_STUFF );
 		for(int i = 0; i < NUM_STUFF; i++) {
 			LoadsOfStuff[i] = (STUFF*)Pool.GetBlock();
 			LoadsOfStuff[i]->one = -i;
@@ -103,7 +104,7 @@ int main()
 		MEMORY_POOL Pool(sizeof(STUFF), 1024);
 		static const uint NUM_DATA = 1000;
 		STUFF* Data[NUM_DATA];
-		Memset( &Data[0], '\0', sizeof(Data) );
+		memset( &Data[0], '\0', sizeof(Data) );
 		bool Failed = false;
 		for(int i = 0; i < NUM_DATA; i++) {
 			Data[i] = (STUFF*)Pool.GetBlock();
