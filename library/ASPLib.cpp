@@ -9,10 +9,19 @@
 
 #include "ASPLib.h"
 #include "MurmurHash.h"
+#include "MemoryPool.h"
+#include "stdlib.h"
 
 // DEBUG
 #include "string.h"
 // END DEBUG
+
+static MEMORY_POOL Pool_8  ( 8,   4096 );
+static MEMORY_POOL Pool_16 ( 16,  4096 );
+static MEMORY_POOL Pool_32 ( 32,  4096 );
+static MEMORY_POOL Pool_64 ( 64,  4096 );
+static MEMORY_POOL Pool_128( 128, 4096 );
+static MEMORY_POOL Pool_256( 256, 4096 );
 
 //*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)
@@ -71,6 +80,53 @@ uint Log2(unsigned int _val)
 {
     // GCC built-in function (bsr - bitscanreverse)
     return bitcountof(_val) - __builtin_clz(_val);
+}
+//*****************************************************************************
+void* Malloc( size_t size )
+{
+    if( size <= 0 ) {
+        return null;
+    } else if( size <= 8 ) {
+        return Pool_8.GetBlock();
+    } else if( size <= 16 ) {
+        return Pool_16.GetBlock();
+    } else if( size <= 32 ) {
+        return Pool_32.GetBlock();
+    } else if( size <= 64 ) {
+        return Pool_64.GetBlock();
+    } else if( size <= 128 ) {
+        return Pool_128.GetBlock();
+    } else if( size <= 256 ) {
+        return Pool_256.GetBlock();
+    } else {
+        return malloc( size );
+    }
+}
+//*****************************************************************************
+void Free( void* ptr )
+{
+    assert(false); // currently unsupported
+}
+//*****************************************************************************
+void Free( size_t size, void* ptr )
+{
+    if( size <= 0 ) {
+        return;
+    } else if( size <= 8 ) {
+        Pool_8.FreeBlock( ptr );
+    } else if( size <= 16 ) {
+        Pool_16.FreeBlock( ptr );
+    } else if( size <= 32 ) {
+        Pool_32.FreeBlock( ptr );
+    } else if( size <= 64 ) {
+        Pool_64.FreeBlock( ptr );
+    } else if( size <= 128 ) {
+        Pool_128.FreeBlock( ptr );
+    } else if( size <= 256 ) {
+        Pool_256.FreeBlock( ptr );
+    } else {
+        free( ptr );
+    }
 }
 //*****************************************************************************
 

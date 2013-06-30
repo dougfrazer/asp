@@ -8,7 +8,6 @@
 #include "MemoryPool.h"
 
 #include "stdlib.h"
-#include "stdio.h"
 
 //******************************************************************************
 MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)

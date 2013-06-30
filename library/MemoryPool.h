@@ -2,7 +2,8 @@
 #ifndef __MEMORY_POOL_H__
 #define __MEMORY_POOL_H__
 
-#include "ASPLib.h"
+#include "ASPTypes.h"
+#include "assert.h"
 
 class MEMORY_POOL
 {
