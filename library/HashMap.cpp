@@ -12,42 +12,27 @@
 #include "ASPLib.h"
 #include "MurmurHash.h"
 
+const float HASH_MAP::DEFAULT_LOAD_FACTOR = .75;
 
 //*****************************************************************************
 // Constructor/Destructor
 //*****************************************************************************
 HASH_MAP::HASH_MAP(uint      _NumBuckets, 
-                   uint      _KeyLen, 
-                   HashMap_AllocFn*  _AllocFn, 
-                   HashMap_FreeFn*   _FreeFn, 
-                   float             _LoadFactor)
+                   uint      _KeyLen,
+                   float     _LoadFactor )
 {
-    AllocFn      = _AllocFn;
-    FreeFn       = _FreeFn;
     NumBuckets   = _NumBuckets;
     KeyLen       = _KeyLen;
     LoadFactor   = _LoadFactor;
-}
-//*****************************************************************************
-HASH_MAP::~HASH_MAP()
-{	
-}
-//*****************************************************************************
 
-
-//*****************************************************************************
-// Public Interface
-//*****************************************************************************
-void HASH_MAP::Init()
-{
-    Buckets = (BUCKET**)AllocFn(NumBuckets*sizeof(BUCKET*));
-    if(Buckets == null) return;
+    Buckets = (BUCKET**)Malloc(NumBuckets*sizeof(BUCKET*));
+    assert(Buckets == null);
 
     Memset(Buckets, (u8)0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
-void HASH_MAP::Deinit()
-{
+HASH_MAP::~HASH_MAP()
+{	
     BUCKET* Bucket;
     BUCKET* NextBucket;
 
@@ -56,17 +41,22 @@ void HASH_MAP::Deinit()
         Bucket = Buckets[i];
         while(Bucket != null) {
             NextBucket = Bucket->next;
-            FreeFn(Bucket);
+            Free(sizeof(BUCKET), Bucket);
             Bucket = NextBucket;
         }
     }
-    FreeFn(Buckets);
+    Free(sizeof(BUCKET), Buckets);
     Memset(Buckets, (u8)0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
+
+
+//*****************************************************************************
+// Public Interface
+//*****************************************************************************
 bool HASH_MAP::Insert(void* key, void* val)
 {
-return InsertInternal(MurmurHash(key, KeyLen), val);
+    return InsertInternal(MurmurHash(key, KeyLen), val);
 }
 //*****************************************************************************
 bool HASH_MAP::Remove(void* key)
@@ -86,7 +76,7 @@ bool HASH_MAP::Remove(void* key)
 
     Removed = *Bucket;
     *Bucket = Removed->next;
-    FreeFn(Removed);
+    Free(sizeof(BUCKET), Removed);
     Size--;
     return true;
 }
@@ -138,7 +128,7 @@ bool HASH_MAP::InsertInternal(u32 Hash, void* val)
         error("Key already exists in map (or another key hashed to same value)");
         return false;
     }
-    *Bucket = (BUCKET*)AllocFn(sizeof(BUCKET));
+    *Bucket = (BUCKET*)Malloc(sizeof(BUCKET));
     if(*Bucket == null) {
         return false;
     }
@@ -164,7 +154,7 @@ bool HASH_MAP::Resize(uint NewNumBuckets)
     BUCKET*  NextBucket;
     uint     OldNumBuckets;
 
-    NewBuckets = (BUCKET**)AllocFn(NewNumBuckets*sizeof(BUCKET*));
+    NewBuckets = (BUCKET**)Malloc(NewNumBuckets*sizeof(BUCKET*));
     if(NewBuckets == null) {
         error("Failed to alloc new space for resizing");
         return false;
@@ -185,11 +175,11 @@ bool HASH_MAP::Resize(uint NewNumBuckets)
                 error("Failed to insert bucket");
                 return false;
             }
-            FreeFn(Bucket);
+            Free(sizeof(BUCKET), Bucket);
             Bucket = NextBucket;
         }
     }
-    FreeFn(OldBuckets);
+    Free(sizeof(BUCKET*)*OldNumBuckets, OldBuckets);
     return true;
 }
 //*****************************************************************************

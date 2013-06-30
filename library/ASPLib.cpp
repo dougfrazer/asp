@@ -9,19 +9,26 @@
 
 #include "ASPLib.h"
 #include "MurmurHash.h"
-#include "MemoryPool.h"
 #include "stdlib.h"
+
+#include "MemoryPool.h"
+#include "HashMap.h"
 
 // DEBUG
 #include "string.h"
 // END DEBUG
 
+struct ALLOCATION {
+    void*  ptr;
+    size_t size;
+};
 static MEMORY_POOL Pool_8  ( 8,   4096 );
 static MEMORY_POOL Pool_16 ( 16,  4096 );
 static MEMORY_POOL Pool_32 ( 32,  4096 );
 static MEMORY_POOL Pool_64 ( 64,  4096 );
 static MEMORY_POOL Pool_128( 128, 4096 );
 static MEMORY_POOL Pool_256( 256, 4096 );
+static HASH_MAP    AllocationMap( 1024, sizeof(void*) );
 
 //*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)
@@ -86,26 +93,53 @@ void* Malloc( size_t size )
 {
     if( size <= 0 ) {
         return null;
-    } else if( size <= 8 ) {
-        return Pool_8.GetBlock();
-    } else if( size <= 16 ) {
-        return Pool_16.GetBlock();
-    } else if( size <= 32 ) {
-        return Pool_32.GetBlock();
-    } else if( size <= 64 ) {
-        return Pool_64.GetBlock();
-    } else if( size <= 128 ) {
-        return Pool_128.GetBlock();
-    } else if( size <= 256 ) {
-        return Pool_256.GetBlock();
-    } else {
-        return malloc( size );
     }
+    
+    assert( sizeof(ALLOCATION) == 8 );
+    ALLOCATION* NewAllocation = (ALLOCATION*)Pool_8.GetBlock();
+
+    if( size <= 8 ) {
+        NewAllocation->ptr = Pool_8.GetBlock();
+    } else if( size <= 16 ) {
+        NewAllocation->ptr = Pool_16.GetBlock();
+    } else if( size <= 32 ) {
+        NewAllocation->ptr = Pool_32.GetBlock();
+    } else if( size <= 64 ) {
+        NewAllocation->ptr = Pool_64.GetBlock();
+    } else if( size <= 128 ) {
+        NewAllocation->ptr = Pool_128.GetBlock();
+    } else if( size <= 256 ) {
+        NewAllocation->ptr = Pool_256.GetBlock();
+    } else {
+        NewAllocation->ptr = malloc( size );
+    }
+
+    AllocationMap.Insert( &NewAllocation->ptr, &NewAllocation );
+    return NewAllocation->ptr;
 }
 //*****************************************************************************
 void Free( void* ptr )
 {
-    assert(false); // currently unsupported
+    ALLOCATION* Alloc = (ALLOCATION*)AllocationMap.Find( ptr );
+    assert( Alloc->size > 0 );
+
+    if( Alloc->size <= 8 ) {
+        Pool_8.FreeBlock( ptr );
+    } else if( Alloc->size <= 16 ) {
+        Pool_16.FreeBlock( ptr );
+    } else if( Alloc->size <= 32 ) {
+        Pool_32.FreeBlock( ptr );
+    } else if( Alloc->size <= 64 ) {
+        Pool_64.FreeBlock( ptr );
+    } else if( Alloc->size <= 128 ) {
+        Pool_128.FreeBlock( ptr );
+    } else if( Alloc->size <= 256 ) {
+        Pool_256.FreeBlock( ptr );
+    } else {
+        free( ptr );
+    }
+
+    AllocationMap.Remove( ptr );
 }
 //*****************************************************************************
 void Free( size_t size, void* ptr )
