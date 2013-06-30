@@ -5,34 +5,34 @@
 #include "ASPTypes.h"
 #include "assert.h"
 
-struct NODE
-{
-    u64   Key;
-    int   Height;
-    NODE* Parent;
-    NODE* Left;
-    NODE* Right;
-};
-
-template <class NODE>
+template <class T>
 class AVL_TREE
 {
+public:
+    struct NODE
+    {
+        u64   Key;
+        int   Height;
+        T* Parent;
+        T* Left;
+        T* Right;
+    };
 public:
     AVL_TREE();
     virtual ~AVL_TREE();
 
 public:
-    void    Insert ( NODE* Node );
-    void    Remove ( u64   Key  );
-    NODE*   Find   ( u64   Key  );
+    void Insert ( T* Node );
+    void Remove ( u64   Key  );
+    T*   Find   ( u64   Key  );
 
 private:
-    void RotateLeft ( NODE* Root );
-    void RotateRight( NODE* Root );
-    int  GetBalance ( NODE* Node );
-    int  Height     ( NODE* Node );
+    void RotateLeft ( T* Root );
+    void RotateRight( T* Root );
+    int  GetBalance ( T* Node );
+    int  Height     ( T* Node );
 
-    NODE* Head;
+    T* Head;
 
     void TestInternal ( void );
 };
@@ -40,15 +40,15 @@ private:
 //******************************************************************************
 // Constructor
 //******************************************************************************
-template < class NODE >
-AVL_TREE<NODE>::AVL_TREE()
+template < class T >
+AVL_TREE<T>::AVL_TREE()
 {
     Head = null;
 //    TestInternal();
 }
 //******************************************************************************
-template < class NODE >
-AVL_TREE<NODE>::~AVL_TREE()
+template < class T >
+AVL_TREE<T>::~AVL_TREE()
 {
 
 }
@@ -58,12 +58,12 @@ AVL_TREE<NODE>::~AVL_TREE()
 //******************************************************************************
 // Public Interface
 //******************************************************************************
-template < class NODE >
-void AVL_TREE<NODE>::Insert( NODE* Node )
+template < class T >
+void AVL_TREE<T>::Insert( T* Node )
 {
-    NODE** s  = &Head;
-    NODE*  p  = null;
-    NODE*  In = static_cast<NODE*>(Node);
+    T** s  = &Head;
+    T*  p  = null;
+    T*  In = Node;
     while( *s != null ) {
         p = *s;
         s = In->Key < (*s)->Key ? &((*s)->Left) : &((*s)->Right);
@@ -94,16 +94,16 @@ void AVL_TREE<NODE>::Insert( NODE* Node )
     }
 }
 //******************************************************************************
-template < class NODE >
-void AVL_TREE<NODE>::Remove( u64 Key )
+template < class T >
+void AVL_TREE<T>::Remove( u64 Key )
 {
     // TODO
 }
 //******************************************************************************
-template < class NODE >
-NODE* AVL_TREE<NODE>::Find( u64 Key )
+template < class T >
+T* AVL_TREE<T>::Find( u64 Key )
 {
-    NODE* i = Head;
+    T* i = Head;
     while( i != null ) {
         if(i->Key == Key) break;
         else if( Key < i->Key ) i = i->Left;
@@ -118,10 +118,10 @@ NODE* AVL_TREE<NODE>::Find( u64 Key )
 //******************************************************************************
 // Private Interface
 //******************************************************************************
-template < class NODE >
-void AVL_TREE<NODE>::RotateLeft( NODE* Root )
+template < class T >
+void AVL_TREE<T>::RotateLeft( T* Root )
 {
-    NODE* Pivot = Root->Right;
+    T* Pivot = Root->Right;
 
     if( Root->Parent == null ) {
         Head = Pivot;
@@ -148,10 +148,10 @@ void AVL_TREE<NODE>::RotateLeft( NODE* Root )
     Pivot->Height = max( Height(Pivot->Left), Height(Pivot->Right) ) + 1;
 }
 //******************************************************************************
-template < class NODE >
-void AVL_TREE<NODE>::RotateRight( NODE* Root )
+template < class T >
+void AVL_TREE<T>::RotateRight( T* Root )
 {
-    NODE* Pivot = Root->Left;
+    T* Pivot = Root->Left;
 
     if( Root->Parent == null ) {
         Head = Pivot;
@@ -179,15 +179,15 @@ void AVL_TREE<NODE>::RotateRight( NODE* Root )
 
 }
 //******************************************************************************
-template < class NODE >
-int AVL_TREE<NODE>::GetBalance( NODE* Node )
+template < class T >
+int AVL_TREE<T>::GetBalance( T* Node )
 {
     if( Node == null ) return 0;
     return Height( Node->Left ) - Height( Node->Right );
 }
 //******************************************************************************
-template < class NODE >
-int AVL_TREE<NODE>::Height( NODE* Node )
+template < class T >
+int AVL_TREE<T>::Height( T* Node )
 {
     return Node == null ? 0 : Node->Height;
 }
@@ -199,8 +199,8 @@ int AVL_TREE<NODE>::Height( NODE* Node )
 //******************************************************************************
 // Test code
 //******************************************************************************
-template < class NODE >
-void AVL_TREE<NODE>::TestInternal()
+template < class T >
+void AVL_TREE<T>::TestInternal()
 {
     assert(Head == null);
 

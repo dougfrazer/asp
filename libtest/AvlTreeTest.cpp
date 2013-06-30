@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-struct SUPER_NODE : public NODE {
+struct SUPER_NODE : public AVL_TREE<SUPER_NODE>::NODE {
     int SuperInt;
 };
 
@@ -16,7 +16,7 @@ int main()
 	printf( "%s", Buffer );
     Passed = false;
     {
-        AVL_TREE<NODE> Tree;
+        AVL_TREE<SUPER_NODE> Tree;
         SUPER_NODE* Test = new SUPER_NODE();
         Tree.Insert( Test );
         delete(Test);
@@ -28,7 +28,7 @@ int main()
 	printf( "%s", Buffer );
     Passed = false;
     {
-        AVL_TREE<NODE> Tree;
+        AVL_TREE<SUPER_NODE> Tree;
         SUPER_NODE* Test = new SUPER_NODE();
         Tree.Insert( Test );
         Tree.Remove( Test->Key );
@@ -41,7 +41,7 @@ int main()
 	printf( "%s", Buffer );
     Passed = false;
     {
-        AVL_TREE<NODE> Tree;
+        AVL_TREE<SUPER_NODE> Tree;
         SUPER_NODE* Test1 = new SUPER_NODE();
         SUPER_NODE* Test2 = new SUPER_NODE();
         Tree.Insert( Test1 );
@@ -58,7 +58,7 @@ int main()
     Passed = false;
     {
         Passed = true;
-        AVL_TREE<NODE> Tree;
+        AVL_TREE<SUPER_NODE> Tree;
         SUPER_NODE* Test1 = new SUPER_NODE();
         SUPER_NODE* Test2 = new SUPER_NODE();
         Test1->Key = 10;
@@ -67,8 +67,8 @@ int main()
         Test2->SuperInt = 10023;
         Tree.Insert( Test1 );
         Tree.Insert( Test2 );
-        SUPER_NODE* Node1 = static_cast<SUPER_NODE*>(Tree.Find( 10 ));
-        SUPER_NODE* Node2 = static_cast<SUPER_NODE*>(Tree.Find( 20 ));
+        SUPER_NODE* Node1 = Tree.Find( 10 );
+        SUPER_NODE* Node2 = Tree.Find( 20 );
         Passed &= Node1->SuperInt == 5000;
         Passed &= Node2->SuperInt == 10023;
     }
