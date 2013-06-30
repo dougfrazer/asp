@@ -36,7 +36,7 @@ private:
         BLOCK* Next;
     };
 
-    struct SEGMENT : NODE
+    struct SEGMENT : public AVL_TREE<SEGMENT>::NODE
     {
         void*    Memory;
         BLOCK*   FreeBlock;
@@ -52,7 +52,7 @@ private:
     SEGMENT* Segments;
     SEGMENT* FreeSegments;
 	u32      DataSize;
-    AVL_TREE<NODE>  SegmentTree;
+    AVL_TREE<SEGMENT>  SegmentTree;
 
     // Debug data
     int      NumBlocks;

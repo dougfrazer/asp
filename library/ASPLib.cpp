@@ -18,7 +18,7 @@
 #include "string.h"
 // END DEBUG
 
-struct ALLOCATION : NODE {
+struct ALLOCATION : public AVL_TREE<ALLOCATION>::NODE {
     void*  ptr;
     size_t size;
 };
@@ -28,7 +28,7 @@ static MEMORY_POOL Pool_32 ( 32,  4096 );
 static MEMORY_POOL Pool_64 ( 64,  4096 );
 static MEMORY_POOL Pool_128( 128, 4096 );
 static MEMORY_POOL Pool_256( 256, 4096 );
-static AVL_TREE<NODE> Allocations;
+static AVL_TREE<ALLOCATION> Allocations;
 
 //*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)

@@ -126,9 +126,3 @@ void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
     (*Prev) = Segment;
 }
 //******************************************************************************
-
-
-
-
-
-
