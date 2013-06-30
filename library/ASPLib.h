@@ -28,6 +28,5 @@ const u32 StringHash(const char* String); // TODO: run at build time for constan
 
 void* Malloc( size_t size );
 void  Free( void* ptr );
-void  Free( size_t size, void* ptr );
 
 #endif

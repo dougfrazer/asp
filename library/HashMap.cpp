@@ -41,11 +41,11 @@ HASH_MAP::~HASH_MAP()
         Bucket = Buckets[i];
         while(Bucket != null) {
             NextBucket = Bucket->next;
-            Free(sizeof(BUCKET), Bucket);
+            Free(Bucket);
             Bucket = NextBucket;
         }
     }
-    Free(sizeof(BUCKET), Buckets);
+    Free(Buckets);
     Memset(Buckets, (u8)0, NumBuckets * sizeof(BUCKET*));
 }
 //*****************************************************************************
@@ -76,7 +76,7 @@ bool HASH_MAP::Remove(void* key)
 
     Removed = *Bucket;
     *Bucket = Removed->next;
-    Free(sizeof(BUCKET), Removed);
+    Free(Removed);
     Size--;
     return true;
 }
@@ -175,11 +175,11 @@ bool HASH_MAP::Resize(uint NewNumBuckets)
                 error("Failed to insert bucket");
                 return false;
             }
-            Free(sizeof(BUCKET), Bucket);
+            Free(Bucket);
             Bucket = NextBucket;
         }
     }
-    Free(sizeof(BUCKET*)*OldNumBuckets, OldBuckets);
+    Free(OldBuckets);
     return true;
 }
 //*****************************************************************************

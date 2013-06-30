@@ -12,7 +12,7 @@
 #include "stdlib.h"
 
 #include "MemoryPool.h"
-#include "HashMap.h"
+#include "AvlTree.h"
 
 // DEBUG
 #include "string.h"
@@ -95,9 +95,8 @@ void* Malloc( size_t size )
         return null;
     }
     
-    int x = sizeof(ALLOCATION);
-    assert( sizeof(ALLOCATION) == 16 );
-    ALLOCATION* NewAllocation = (ALLOCATION*)Pool_16.GetBlock();
+    assert( sizeof(ALLOCATION) == 56 );
+    ALLOCATION* NewAllocation = (ALLOCATION*)Pool_64.GetBlock();
 
     if( size <= 8 ) {
         NewAllocation->ptr = Pool_8.GetBlock();
@@ -120,18 +119,7 @@ void* Malloc( size_t size )
     return NewAllocation->ptr;
 }
 //*****************************************************************************
-void Free( void* ptr )
-{
-    ALLOCATION* Alloc = (ALLOCATION*)Allocations.Find( (u64)ptr );
-    assert( Alloc != null );
-    assert( Alloc->size > 0 );
-
-    Free( Alloc->size, ptr );
-
-    Allocations.Remove( (u64)ptr );
-}
-//*****************************************************************************
-void FreeInternal( size_t size, void* ptr )
+static void FreeInternal( size_t size, void* ptr )
 {
     if( size <= 0 ) {
         return;
@@ -150,6 +138,17 @@ void FreeInternal( size_t size, void* ptr )
     } else {
         free( ptr );
     }
+}
+//*****************************************************************************
+void Free( void* ptr )
+{
+    ALLOCATION* Alloc = (ALLOCATION*)Allocations.Find( (u64)ptr );
+    assert( Alloc != null );
+    assert( Alloc->size > 0 );
+
+    FreeInternal( Alloc->size, ptr );
+
+    Allocations.Remove( (u64)ptr );
 }
 //*****************************************************************************
 

@@ -31,7 +31,7 @@ int main()
         AVL_TREE<NODE> Tree;
         SUPER_NODE* Test = new SUPER_NODE();
         Tree.Insert( Test );
-        Tree.Remove( Test );
+        Tree.Remove( Test->Key );
         delete(Test);
         Passed = true;
     }
@@ -46,7 +46,7 @@ int main()
         SUPER_NODE* Test2 = new SUPER_NODE();
         Tree.Insert( Test1 );
         Tree.Insert( Test2 );
-        Tree.Remove( Test1 );
+        Tree.Remove( Test1->Key );
         delete( Test1 );
         delete( Test2 );
         Passed = true;

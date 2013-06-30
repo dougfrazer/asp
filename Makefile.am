@@ -1,7 +1,7 @@
 AM_CXXFLAGS=-Wall -I../.. -I. -g
 
 noinst_LIBRARIES = libasp.a
-libasp_a_SOURCES = library/ASPLib.cpp library/HashMap.cpp library/MurmurHash.cpp library/network/PacketHandler.cpp library/network/PacketStream.cpp library/MemoryPool.cpp library/AvlTree.cpp 
+libasp_a_SOURCES = library/ASPLib.cpp library/HashMap.cpp library/MurmurHash.cpp library/network/PacketHandler.cpp library/network/PacketStream.cpp library/MemoryPool.cpp 
 
 bin_PROGRAMS=bin/aspclient bin/aspserver
 

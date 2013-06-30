@@ -23,8 +23,8 @@ public:
 
 public:
     void    Insert ( NODE* Node );
-    void    Remove ( NODE* Node );
-    NODE*   Find   ( u64 Key );
+    void    Remove ( u64   Key  );
+    NODE*   Find   ( u64   Key  );
 
 private:
     void RotateLeft ( NODE* Root );
@@ -33,6 +33,8 @@ private:
     int  Height     ( NODE* Node );
 
     NODE* Head;
+
+    void TestInternal ( void );
 };
 
 //******************************************************************************
@@ -42,6 +44,7 @@ template < class NODE >
 AVL_TREE<NODE>::AVL_TREE()
 {
     Head = null;
+//    TestInternal();
 }
 //******************************************************************************
 template < class NODE >
@@ -80,10 +83,10 @@ void AVL_TREE<NODE>::Insert( NODE* Node )
                 RotateRight(p);
             }
         } else if( balance < -1 ) {
-            if( In->Key >= p->Right->Key ) { // Right Left case
-                RotateRight(p->Right);
+            if( In->Key >= p->Right->Key ) { // Right Right case
                 RotateLeft(p);
-            } else { // Right Right case
+            } else { // Right Left case
+                RotateRight(p->Right);
                 RotateLeft(p);
             }
         }
@@ -92,7 +95,7 @@ void AVL_TREE<NODE>::Insert( NODE* Node )
 }
 //******************************************************************************
 template < class NODE >
-void AVL_TREE<NODE>::Remove( NODE* Node )
+void AVL_TREE<NODE>::Remove( u64 Key )
 {
     // TODO
 }
@@ -189,6 +192,54 @@ int AVL_TREE<NODE>::Height( NODE* Node )
     return Node == null ? 0 : Node->Height;
 }
 //******************************************************************************
+//******************************************************************************
+
+
+
+//******************************************************************************
+// Test code
+//******************************************************************************
+template < class NODE >
+void AVL_TREE<NODE>::TestInternal()
+{
+    assert(Head == null);
+
+    const uint NUM_TEST_NODES = 100;
+    NODE* TestNodes[NUM_TEST_NODES];
+    for(int i = 1; i < NUM_TEST_NODES; i++) {
+        TestNodes[i] = new NODE();
+        TestNodes[i]->Key = i;
+    }
+    
+    // Test Left-Left rotation
+    Insert(TestNodes[30]);
+    Insert(TestNodes[40]);
+    Insert(TestNodes[50]);
+
+    // Test Right-Right rotation
+    Insert(TestNodes[20]);
+    Insert(TestNodes[10]);
+
+    // Test Right-Left rotation
+    Insert(TestNodes[25]);
+
+    // Test Left-Right rotation
+    Insert(TestNodes[45]);
+    Insert(TestNodes[44]);
+    Insert(TestNodes[42]);
+    Insert(TestNodes[41]);
+
+    assert(Head->Key == 30);
+    assert(Head->Left->Key == 20);
+    assert(Head->Left->Left->Key == 10);
+    assert(Head->Left->Right->Key == 25);
+    assert(Head->Right->Key == 42);
+    assert(Head->Right->Left->Key == 40);
+    assert(Head->Right->Left->Right->Key == 41);
+    assert(Head->Right->Right->Key == 45);
+    assert(Head->Right->Right->Left->Key == 44);
+    assert(Head->Right->Right->Right->Key == 50);
+}
 //******************************************************************************
 
 #endif

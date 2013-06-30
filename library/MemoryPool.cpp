@@ -104,9 +104,16 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
 //******************************************************************************
 MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
 {
-    SEGMENT* Segment = (SEGMENT*)aligndown( ptr, AllocationSize );
-    void* Memory = (void*)alignup( (u8*)(Segment) + sizeof(SEGMENT), BlockSize );
-    return static_cast<SEGMENT*>(SegmentTree.Find( (u64)(Memory) ));
+    SEGMENT* s = Segments;
+    while( s != null ) {
+        if( s->Memory <= ptr && ( (u8*)(s->Memory) + DataSize ) > ptr ) {
+            assert( ( (u8*)ptr - (u8*)(s->Memory)  ) % BlockSize == 0 ); 
+            return s;
+        }
+        assert( s->Key == (u64)s->Memory );
+        s = ptr < s->Memory ? static_cast<SEGMENT*>(s->Left) : static_cast<SEGMENT*>(s->Right);
+    }
+    return null;
 }
 //******************************************************************************
 void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
@@ -125,49 +132,3 @@ void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
 
 
 
-//******************************************************************************
-// Test code
-//******************************************************************************
-void MEMORY_POOL::TestInternal()
-{
-#if 0
-    assert(Segments == null);
-
-    const uint NUM_TEST_SEGS = 100;
-    SEGMENT* TestSegs[NUM_TEST_SEGS];
-    for(int i = 1; i < NUM_TEST_SEGS; i++) {
-        TestSegs[i] = new SEGMENT();
-        TestSegs[i]->Memory = (void*)i;
-    }
-    
-    // Test Left-Left rotation
-    InsertIntoTree(TestSegs[30]);
-    InsertIntoTree(TestSegs[40]);
-    InsertIntoTree(TestSegs[50]);
-
-    // Test Right-Right rotation
-    InsertIntoTree(TestSegs[20]);
-    InsertIntoTree(TestSegs[10]);
-
-    // Test Right-Left rotation
-    InsertIntoTree(TestSegs[25]);
-
-    // Test Left-Right rotation
-    InsertIntoTree(TestSegs[45]);
-    InsertIntoTree(TestSegs[44]);
-    InsertIntoTree(TestSegs[42]);
-    InsertIntoTree(TestSegs[41]);
-
-    assert((int)Segments->Memory == 30);
-    assert((int)Segments->Left->Memory == 20);
-    assert((int)Segments->Left->Left->Memory == 10);
-    assert((int)Segments->Left->Right->Memory == 25);
-    assert((int)Segments->Right->Memory == 42);
-    assert((int)Segments->Right->Left->Memory == 40);
-    assert((int)Segments->Right->Left->Right->Memory == 41);
-    assert((int)Segments->Right->Right->Memory == 45);
-    assert((int)Segments->Right->Right->Left->Memory == 44);
-    assert((int)Segments->Right->Right->Right->Memory == 50);
-#endif
-}
-//******************************************************************************
