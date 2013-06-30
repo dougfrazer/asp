@@ -26,15 +26,14 @@ public:
     void Remove ( u64   Key  );
     T*   Find   ( u64   Key  );
 
+public:
+    T*   Head;
+
 private:
     void RotateLeft ( T* Root );
     void RotateRight( T* Root );
     int  GetBalance ( T* Node );
     int  Height     ( T* Node );
-
-    T* Head;
-
-    void TestInternal ( void );
 };
 
 //******************************************************************************
@@ -44,7 +43,6 @@ template < class T >
 AVL_TREE<T>::AVL_TREE()
 {
     Head = null;
-//    TestInternal();
 }
 //******************************************************************************
 template < class T >
@@ -192,54 +190,6 @@ int AVL_TREE<T>::Height( T* Node )
     return Node == null ? 0 : Node->Height;
 }
 //******************************************************************************
-//******************************************************************************
-
-
-
-//******************************************************************************
-// Test code
-//******************************************************************************
-template < class T >
-void AVL_TREE<T>::TestInternal()
-{
-    assert(Head == null);
-
-    const uint NUM_TEST_NODES = 100;
-    NODE* TestNodes[NUM_TEST_NODES];
-    for(int i = 1; i < NUM_TEST_NODES; i++) {
-        TestNodes[i] = new NODE();
-        TestNodes[i]->Key = i;
-    }
-    
-    // Test Left-Left rotation
-    Insert(TestNodes[30]);
-    Insert(TestNodes[40]);
-    Insert(TestNodes[50]);
-
-    // Test Right-Right rotation
-    Insert(TestNodes[20]);
-    Insert(TestNodes[10]);
-
-    // Test Right-Left rotation
-    Insert(TestNodes[25]);
-
-    // Test Left-Right rotation
-    Insert(TestNodes[45]);
-    Insert(TestNodes[44]);
-    Insert(TestNodes[42]);
-    Insert(TestNodes[41]);
-
-    assert(Head->Key == 30);
-    assert(Head->Left->Key == 20);
-    assert(Head->Left->Left->Key == 10);
-    assert(Head->Left->Right->Key == 25);
-    assert(Head->Right->Key == 42);
-    assert(Head->Right->Left->Key == 40);
-    assert(Head->Right->Left->Right->Key == 41);
-    assert(Head->Right->Right->Key == 45);
-    assert(Head->Right->Right->Left->Key == 44);
-    assert(Head->Right->Right->Right->Key == 50);
-}
 //******************************************************************************
 
 #endif
