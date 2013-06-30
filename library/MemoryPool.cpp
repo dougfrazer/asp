@@ -22,7 +22,8 @@ MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
     
     // Even this is far too generous of an assertion
     assert( BlockSize < AllocationSize / 2 );
-    assert( _BlockSize > sizeof(BLOCK) );
+    
+    BlockSize = alignup( _BlockSize, sizeof(BLOCK) );
 
     Segments       = GetNewSegment();
 
