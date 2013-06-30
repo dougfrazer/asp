@@ -18,7 +18,7 @@
 #include "string.h"
 // END DEBUG
 
-struct ALLOCATION {
+struct ALLOCATION : NODE {
     void*  ptr;
     size_t size;
 };
@@ -28,7 +28,7 @@ static MEMORY_POOL Pool_32 ( 32,  4096 );
 static MEMORY_POOL Pool_64 ( 64,  4096 );
 static MEMORY_POOL Pool_128( 128, 4096 );
 static MEMORY_POOL Pool_256( 256, 4096 );
-static HASH_MAP    AllocationMap( 1024, sizeof(void*) );
+static AVL_TREE<NODE> Allocations;
 
 //*****************************************************************************
 void Memcpy(void* dest, const void* src, size_t size)
@@ -95,8 +95,9 @@ void* Malloc( size_t size )
         return null;
     }
     
-    assert( sizeof(ALLOCATION) == 8 );
-    ALLOCATION* NewAllocation = (ALLOCATION*)Pool_8.GetBlock();
+    int x = sizeof(ALLOCATION);
+    assert( sizeof(ALLOCATION) == 16 );
+    ALLOCATION* NewAllocation = (ALLOCATION*)Pool_16.GetBlock();
 
     if( size <= 8 ) {
         NewAllocation->ptr = Pool_8.GetBlock();
@@ -114,35 +115,23 @@ void* Malloc( size_t size )
         NewAllocation->ptr = malloc( size );
     }
 
-    AllocationMap.Insert( &NewAllocation->ptr, &NewAllocation );
+    NewAllocation->Key = (u64)( NewAllocation->ptr );
+    Allocations.Insert( NewAllocation );
     return NewAllocation->ptr;
 }
 //*****************************************************************************
 void Free( void* ptr )
 {
-    ALLOCATION* Alloc = (ALLOCATION*)AllocationMap.Find( ptr );
+    ALLOCATION* Alloc = (ALLOCATION*)Allocations.Find( (u64)ptr );
+    assert( Alloc != null );
     assert( Alloc->size > 0 );
 
-    if( Alloc->size <= 8 ) {
-        Pool_8.FreeBlock( ptr );
-    } else if( Alloc->size <= 16 ) {
-        Pool_16.FreeBlock( ptr );
-    } else if( Alloc->size <= 32 ) {
-        Pool_32.FreeBlock( ptr );
-    } else if( Alloc->size <= 64 ) {
-        Pool_64.FreeBlock( ptr );
-    } else if( Alloc->size <= 128 ) {
-        Pool_128.FreeBlock( ptr );
-    } else if( Alloc->size <= 256 ) {
-        Pool_256.FreeBlock( ptr );
-    } else {
-        free( ptr );
-    }
+    Free( Alloc->size, ptr );
 
-    AllocationMap.Remove( ptr );
+    Allocations.Remove( (u64)ptr );
 }
 //*****************************************************************************
-void Free( size_t size, void* ptr )
+void FreeInternal( size_t size, void* ptr )
 {
     if( size <= 0 ) {
         return;
