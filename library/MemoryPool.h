@@ -4,6 +4,7 @@
 
 #include "ASPTypes.h"
 #include "assert.h"
+#include "AvlTree.h"
 
 class MEMORY_POOL
 {
@@ -35,27 +36,15 @@ private:
         BLOCK* Next;
     };
 
-    struct SEGMENT
+    struct SEGMENT : NODE
     {
         void*    Memory;
         BLOCK*   FreeBlock;
         SEGMENT* NextFreeSegment;
-        
-        // Tree Data
-		int      Height;
-		SEGMENT* Parent;
-        SEGMENT* Left;
-        SEGMENT* Right;
     };
     SEGMENT*  GetNewSegment   ( void );
     SEGMENT*  FindSegment     ( void* ptr );
     void      AddToFreeList   ( SEGMENT* Segment );
-    
-    void      InsertIntoTree  ( SEGMENT* Segment );
-    void      RotateLeft      ( SEGMENT* Segment );
-    void      RotateRight     ( SEGMENT* Segment );
-	int       GetBalanceFactor( SEGMENT* Segment );
-	int       Height          ( SEGMENT* Segment );
     
     // Data
     u32      BlockSize;
@@ -63,11 +52,11 @@ private:
     SEGMENT* Segments;
     SEGMENT* FreeSegments;
 	u32      DataSize;
+    AVL_TREE<NODE>  SegmentTree;
 
     // Debug data
     int      NumBlocks;
     int      NumSegments;
-    int      MaxDepth;
 	void     TestInternal();
 };
 

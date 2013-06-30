@@ -7,7 +7,7 @@
 
 struct NODE
 {
-    int   Key;
+    u64   Key;
     int   Height;
     NODE* Parent;
     NODE* Left;
@@ -24,7 +24,7 @@ public:
 public:
     void    Insert ( NODE* Node );
     void    Remove ( NODE* Node );
-    NODE*   Find   ( int Key );
+    NODE*   Find   ( u64 Key );
 
 private:
     void RotateLeft ( NODE* Root );
@@ -98,7 +98,7 @@ void AVL_TREE<NODE>::Remove( NODE* Node )
 }
 //******************************************************************************
 template < class NODE >
-NODE* AVL_TREE<NODE>::Find( int Key )
+NODE* AVL_TREE<NODE>::Find( u64 Key )
 {
     NODE* i = Head;
     while( i != null ) {
