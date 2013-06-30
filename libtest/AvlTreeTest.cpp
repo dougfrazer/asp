@@ -57,6 +57,7 @@ int main()
 	printf( "%s", Buffer );
     Passed = false;
     {
+        Passed = true;
         AVL_TREE<NODE> Tree;
         SUPER_NODE* Test1 = new SUPER_NODE();
         SUPER_NODE* Test2 = new SUPER_NODE();
@@ -68,8 +69,8 @@ int main()
         Tree.Insert( Test2 );
         SUPER_NODE* Node1 = static_cast<SUPER_NODE*>(Tree.Find( 10 ));
         SUPER_NODE* Node2 = static_cast<SUPER_NODE*>(Tree.Find( 20 ));
-        Passed |= Node1->SuperInt == 5000;
-        Passed |= Node2->SuperInt == 10023;
+        Passed &= Node1->SuperInt == 5000;
+        Passed &= Node2->SuperInt == 10023;
     }
     printf("%s\n", Passed ? "passed" : "failed");
 }
