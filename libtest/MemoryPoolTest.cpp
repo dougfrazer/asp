@@ -14,7 +14,7 @@ int main()
         u8  three;
     };
 	static const uint NUM_STUFF = 1000000;
-	STUFF** LoadsOfStuff        = (STUFF**)malloc(NUM_STUFF*sizeof(STUFF));;
+	STUFF** LoadsOfStuff        = (STUFF**)malloc(NUM_STUFF*sizeof(STUFF*));;
 	int     BlockCount          = 0;
 	STUFF*  Blah                = null;
     char    Buffer[100];
@@ -61,14 +61,14 @@ int main()
 		Pool.FreeBlock(Blah);
 		printf("Passed\n");
 	}
-   
+    
     char TempBuffer[100];
     snprintf( TempBuffer, 100, "Starting test 5: randomly create and free %d times...", NUM_STUFF*10 );
 	snprintf( Buffer, 100, "%-100s", TempBuffer );
 	printf( "%s", Buffer );
 	{
 		MEMORY_POOL Pool(sizeof(STUFF), 1024);
-		memset( &LoadsOfStuff[0], '\0', NUM_STUFF*sizeof(STUFF) );
+		memset( &LoadsOfStuff[0], '\0', NUM_STUFF*sizeof(STUFF*) );
 		for(int i = 0; i < NUM_STUFF * 10; i++) {
 			int index = rand()%NUM_STUFF;
 			if(LoadsOfStuff[index] == null) {
@@ -85,7 +85,7 @@ int main()
 	printf( "%s", Buffer );
 	{
 		MEMORY_POOL Pool(sizeof(STUFF), 1024);
-		memset( &LoadsOfStuff[0], '\0', sizeof(STUFF)*NUM_STUFF );
+		memset( &LoadsOfStuff[0], '\0', sizeof(STUFF*)*NUM_STUFF );
 		for(int i = 0; i < NUM_STUFF; i++) {
 			LoadsOfStuff[i] = (STUFF*)Pool.GetBlock();
 			LoadsOfStuff[i]->one = -i;

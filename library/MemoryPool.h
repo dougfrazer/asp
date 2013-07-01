@@ -45,11 +45,11 @@ private:
     SEGMENT*  GetNewSegment   ( void );
     SEGMENT*  FindSegment     ( void* ptr );
     void      AddToFreeList   ( SEGMENT* Segment );
-    
+    void      FreeMemory      ( SEGMENT* Segment );
+
     // Data
     u32      BlockSize;
     u32      AllocationSize;
-    SEGMENT* Segments;
     SEGMENT* FreeSegments;
 	u32      DataSize;
     AVL_TREE<SEGMENT>  SegmentTree;
@@ -57,7 +57,6 @@ private:
     // Debug data
     int      NumBlocks;
     int      NumSegments;
-	void     TestInternal();
 };
 
 #endif

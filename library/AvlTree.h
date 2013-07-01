@@ -22,18 +22,23 @@ public:
     virtual ~AVL_TREE();
 
 public:
-    void Insert ( T* Node );
+    void Insert ( T*    Node );
     void Remove ( u64   Key  );
+    void Remove ( T*    Node );
     T*   Find   ( u64   Key  );
 
 public:
     T*   Head;
 
 private:
-    void RotateLeft ( T* Root );
-    void RotateRight( T* Root );
-    int  GetBalance ( T* Node );
-    int  Height     ( T* Node );
+    void RotateLeft  ( T* Root );
+    void RotateRight ( T* Root );
+    int  GetBalance  ( T* Node );
+    int  Height      ( T* Node );
+    void UpdateParent( T* Node, T* NewChild );
+    void Rebalance   ( T* Node );
+
+    void Verify      ( T* a, T* b );
 };
 
 //******************************************************************************
@@ -61,41 +66,110 @@ void AVL_TREE<T>::Insert( T* Node )
 {
     T** s  = &Head;
     T*  p  = null;
-    T*  In = Node;
     while( *s != null ) {
         p = *s;
-        s = In->Key < (*s)->Key ? &((*s)->Left) : &((*s)->Right);
+        s = Node->Key < (*s)->Key ? &((*s)->Left) : &((*s)->Right);
     }
-    *s = In;
+    *s = Node;
     (*s)->Height = 1;
     (*s)->Parent = p;
-
-    while( p != null ) {
-        p->Height = max( Height(p->Left), Height(p->Right) ) + 1;
-        int balance = GetBalance(p);
+    
+    Rebalance( p );
+}
+//******************************************************************************
+template < class T >
+void AVL_TREE<T>::Rebalance( T* Node )
+{
+    while( Node != null ) {
+        Node->Height = max( Height(Node->Left), Height(Node->Right) ) + 1;
+        int balance = GetBalance(Node);
         if( balance > 1 ) {
-            if( In->Key < p->Left->Key ) { // Left Left case
-                RotateRight(p);
-            } else { // Left Right case
-                RotateLeft(p->Left);
-                RotateRight(p);
+            if( Height(Node->Left->Right) > Height(Node->Left->Left) ) {
+                RotateLeft(Node->Left);
             }
+            RotateRight(Node);
         } else if( balance < -1 ) {
-            if( In->Key >= p->Right->Key ) { // Right Right case
-                RotateLeft(p);
-            } else { // Right Left case
-                RotateRight(p->Right);
-                RotateLeft(p);
+            if( Height(Node->Right->Left) > Height(Node->Right->Right) ) {
+                RotateRight(Node->Right);
             }
+            RotateLeft(Node);
         }
-        p = p->Parent;
+        Node = Node->Parent;
+    }
+}
+//******************************************************************************
+template < class T >
+void AVL_TREE<T>::UpdateParent( T* Node, T* NewChild )
+{
+    if( Node->Parent == null ) {
+        Head = NewChild;
+    } else {
+        if( Node->Parent->Right == Node ) {
+            Node->Parent->Right = NewChild;
+        } else if( Node->Parent->Left == Node ) {
+            Node->Parent->Left = NewChild;
+        } else {
+            assert( false );
+        }
+    }
+}
+//******************************************************************************
+template < class T >
+void AVL_TREE<T>::Verify( T* Node, T* SearchNode )
+{
+    if( Node != null ) {
+        assert( Node != SearchNode );
+        assert( Node->Parent != SearchNode );
+        Verify( Node->Left,  SearchNode );
+        Verify( Node->Right, SearchNode );
     }
 }
 //******************************************************************************
 template < class T >
 void AVL_TREE<T>::Remove( u64 Key )
 {
-    // TODO
+    T* Node = Find( Key );
+    assert( Node != null );
+    while( true ) {
+        if( Node->Left == null && Node->Right == null ) {
+            UpdateParent( Node, null );
+            break;
+        } else if( Node->Left == null ) {
+            Node->Right->Parent = Node->Parent;
+            UpdateParent( Node, Node->Right );
+            break;
+        } else if( Node->Right == null ) {
+            Node->Left->Parent = Node->Parent;
+            UpdateParent( Node, Node->Left );
+            break;
+        } else {
+            if( Node->Parent == null ) {
+                RotateRight( Node );
+            } else if( Node == Node->Parent->Left ) {
+                RotateRight( Node );
+            } else if( Node == Node->Parent->Right ) {
+                RotateLeft( Node );
+            } else {
+                assert( false );
+            }
+        }
+    }
+
+    if( Node->Parent != null ) {
+        Node->Parent->Height = max( Height(Node->Parent->Left), Height(Node->Parent->Right) ) + 1;
+    }
+
+    assert( Find(Node->Key) == null );
+    Verify( Head, Node );
+
+    Rebalance( Node ); 
+}
+//******************************************************************************
+//
+template < class T >
+void AVL_TREE<T>::Remove( T* Node )
+{
+    Remove( Node->Key );
 }
 //******************************************************************************
 template < class T >
@@ -121,17 +195,7 @@ void AVL_TREE<T>::RotateLeft( T* Root )
 {
     T* Pivot = Root->Right;
 
-    if( Root->Parent == null ) {
-        Head = Pivot;
-    } else {
-        if( Root->Parent->Left == Root ) {
-            Root->Parent->Left = Pivot;
-        } else if( Root->Parent->Right == Root ) {
-            Root->Parent->Right = Pivot;
-        } else {
-            assert(false);
-        }
-    }
+    UpdateParent( Root, Pivot );
 
     Root->Right          = Pivot->Left;
     Pivot->Left          = Root;
@@ -151,17 +215,7 @@ void AVL_TREE<T>::RotateRight( T* Root )
 {
     T* Pivot = Root->Left;
 
-    if( Root->Parent == null ) {
-        Head = Pivot;
-    } else {
-        if( Root->Parent->Left == Root ) {
-            Root->Parent->Left = Pivot;
-        } else if( Root->Parent->Right == Root ) {
-            Root->Parent->Right = Pivot;
-        } else {
-            assert(false);
-        }
-    }
+    UpdateParent( Root, Pivot );
 
     Root->Left            = Pivot->Right;                  
     Pivot->Right          = Root;

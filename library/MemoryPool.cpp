@@ -14,7 +14,6 @@ MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
 {
     BlockSize      = max(sizeof(BLOCK), _BlockSize);
     AllocationSize = _AllocationSize;
-    Segments       = null;
     FreeSegments   = null;
     NumBlocks      = 0;
     NumSegments    = 0;
@@ -25,12 +24,12 @@ MEMORY_POOL::MEMORY_POOL(u32 _BlockSize, u32 _AllocationSize)
     BlockSize = alignup( _BlockSize, sizeof(BLOCK) );
     DataSize  = AllocationSize - alignup( sizeof(SEGMENT), BlockSize );
 
-    Segments  = GetNewSegment();
+    GetNewSegment();
 }
 //******************************************************************************
 MEMORY_POOL::~MEMORY_POOL()
 {
-    // free the memory
+    FreeMemory(SegmentTree.Head);
 }
 //******************************************************************************
 
@@ -104,16 +103,16 @@ MEMORY_POOL::SEGMENT* MEMORY_POOL::GetNewSegment()
 //******************************************************************************
 MEMORY_POOL::SEGMENT* MEMORY_POOL::FindSegment(void* ptr)
 {
-    SEGMENT* s = Segments;
+    SEGMENT* s = SegmentTree.Head;
     while( s != null ) {
+        assert( s->Key == (u64)s->Memory );
         if( s->Memory <= ptr && ( (u8*)(s->Memory) + DataSize ) > ptr ) {
             assert( ( (u8*)ptr - (u8*)(s->Memory)  ) % BlockSize == 0 ); 
-            return s;
+            break;
         }
-        assert( s->Key == (u64)s->Memory );
-        s = ptr < s->Memory ? static_cast<SEGMENT*>(s->Left) : static_cast<SEGMENT*>(s->Right);
+        s = ptr < s->Memory ? s->Left : s->Right;
     }
-    return null;
+    return s;
 }
 //******************************************************************************
 void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
@@ -124,5 +123,20 @@ void MEMORY_POOL::AddToFreeList(SEGMENT* Segment)
         *Prev = (*Prev)->NextFreeSegment;
     }
     (*Prev) = Segment;
+}
+//******************************************************************************
+void MEMORY_POOL::FreeMemory(SEGMENT* Segment)
+{
+    if( Segment == null ) {
+        return;
+    }
+
+    FreeMemory( Segment->Left );
+    FreeMemory( Segment->Right );
+ 
+    assert( Segment->Left == null && Segment->Right == null );
+    
+    SegmentTree.Remove( Segment );
+    free(Segment);
 }
 //******************************************************************************
