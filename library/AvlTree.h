@@ -37,8 +37,7 @@ private:
     int  Height      ( T* Node );
     void UpdateParent( T* Node, T* NewChild );
     void Rebalance   ( T* Node );
-
-    void Verify      ( T* a, T* b );
+    void RecalculateHeight ( T* Node );
 };
 
 //******************************************************************************
@@ -81,7 +80,7 @@ template < class T >
 void AVL_TREE<T>::Rebalance( T* Node )
 {
     while( Node != null ) {
-        Node->Height = max( Height(Node->Left), Height(Node->Right) ) + 1;
+        RecalculateHeight( Node );
         int balance = GetBalance(Node);
         if( balance > 1 ) {
             if( Height(Node->Left->Right) > Height(Node->Left->Left) ) {
@@ -115,57 +114,52 @@ void AVL_TREE<T>::UpdateParent( T* Node, T* NewChild )
 }
 //******************************************************************************
 template < class T >
-void AVL_TREE<T>::Verify( T* Node, T* SearchNode )
+void AVL_TREE<T>::RecalculateHeight( T* Node )
 {
-    if( Node != null ) {
-        assert( Node != SearchNode );
-        assert( Node->Parent != SearchNode );
-        Verify( Node->Left,  SearchNode );
-        Verify( Node->Right, SearchNode );
-    }
+    Node->Height = max( Height(Node->Left), Height(Node->Right) ) + 1;
 }
 //******************************************************************************
 template < class T >
 void AVL_TREE<T>::Remove( u64 Key )
 {
     T* Node = Find( Key );
+    T* RebalanceNode = Node->Parent;
     assert( Node != null );
-    while( true ) {
-        if( Node->Left == null && Node->Right == null ) {
-            UpdateParent( Node, null );
-            break;
-        } else if( Node->Left == null ) {
-            Node->Right->Parent = Node->Parent;
-            UpdateParent( Node, Node->Right );
-            break;
-        } else if( Node->Right == null ) {
-            Node->Left->Parent = Node->Parent;
-            UpdateParent( Node, Node->Left );
-            break;
-        } else {
-            if( Node->Parent == null ) {
-                RotateRight( Node );
-            } else if( Node == Node->Parent->Left ) {
-                RotateRight( Node );
-            } else if( Node == Node->Parent->Right ) {
-                RotateLeft( Node );
-            } else {
-                assert( false );
-            }
+    if( Node->Left == null && Node->Right == null ) {
+        UpdateParent( Node, null );
+    } else if( Node->Left == null ) {
+        Node->Right->Parent = Node->Parent;
+        UpdateParent( Node, Node->Right );
+    } else if( Node->Right == null ) {
+        Node->Left->Parent = Node->Parent;
+        UpdateParent( Node, Node->Left );
+    } else {
+        T* SwapNode = Node->Left;
+        while( SwapNode->Right != null ) {
+            SwapNode = SwapNode->Right;
         }
+        if( SwapNode->Left != null ) {
+            SwapNode->Parent->Right = SwapNode->Left;
+            SwapNode->Left->Parent = SwapNode->Parent;
+            RebalanceNode = SwapNode->Left;
+        } else {
+            if( SwapNode->Parent != Node ) {
+                SwapNode->Parent->Right = null;
+            }
+            RebalanceNode = SwapNode->Parent;
+        }
+        SwapNode->Left = SwapNode == Node->Left ? null : Node->Left;
+        SwapNode->Right = Node->Right;
+        SwapNode->Parent = Node->Parent;
+        if( Node->Right != null ) {
+            Node->Right->Parent = SwapNode;
+        }
+        UpdateParent( Node, SwapNode );
     }
 
-    if( Node->Parent != null ) {
-        Node->Parent->Height = max( Height(Node->Parent->Left), Height(Node->Parent->Right) ) + 1;
-    }
-
-    assert( Find(Node->Key) == null );
-    Verify( Head, Node );
-
-    Rebalance( Node ); 
+    Rebalance( RebalanceNode ); 
 }
 //******************************************************************************
-//
 template < class T >
 void AVL_TREE<T>::Remove( T* Node )
 {
@@ -206,8 +200,8 @@ void AVL_TREE<T>::RotateLeft( T* Root )
         Root->Right->Parent  = Root;
     }
 
-    Root->Height = max( Height(Root->Left), Height(Root->Right) ) + 1;
-    Pivot->Height = max( Height(Pivot->Left), Height(Pivot->Right) ) + 1;
+    RecalculateHeight( Root );
+    RecalculateHeight( Pivot );
 }
 //******************************************************************************
 template < class T >
@@ -226,9 +220,8 @@ void AVL_TREE<T>::RotateRight( T* Root )
         Root->Left->Parent    = Root;
     }
 
-    Root->Height = max( Height(Root->Left), Height(Root->Right) ) + 1;
-    Pivot->Height = max( Height(Pivot->Left), Height(Pivot->Right) ) + 1;
-
+    RecalculateHeight( Root );
+    RecalculateHeight( Pivot );
 }
 //******************************************************************************
 template < class T >

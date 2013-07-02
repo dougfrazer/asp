@@ -8,104 +8,144 @@ struct SUPER_NODE : public AVL_TREE<SUPER_NODE>::NODE {
     int SuperInt;
 };
 
-int main()
-{
-    char Buffer[100];
-    srand(time(null));
 
-    {
-        snprintf( Buffer, 100, "%-100s", "1: Insert a single element" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Test = new SUPER_NODE();
-        Test->Key = 100;
-        Tree.Insert( Test );
-        Passed = Tree.Head == Test;
-        printf("%s\n", Passed ? "passed" : "failed");
+//******************************************************************************
+class TEST
+{
+public:
+    TEST(const char* Title);
+    virtual ~TEST() {};
+
+public:
+    bool Run();
+    TEST* Next;
+
+protected:
+    virtual bool RunInternal() = 0;
+
+    // Data
+    bool Passed;
+    AVL_TREE<SUPER_NODE> Tree;
+    static const int MAX_NODES = 100;
+    SUPER_NODE* Nodes[MAX_NODES];
+
+private:
+    char Buffer[100];
+};
+
+static TEST* Tests = null;
+
+TEST::TEST(const char* Title)
+{
+    snprintf( Buffer, 100, "%-60s", Title );
+    if( Tests == null ) {
+        Tests = this;
+    } else {
+        TEST* Temp = Tests;
+        while( Temp->Next != null ) {
+            Temp = Temp->Next;
+        }
+        Temp->Next = this;
     }
-    
-    {
-        snprintf( Buffer, 100, "%-100s", "2: Remove a single element" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Test = new SUPER_NODE();
-        Test->Key = 100;
-        Tree.Insert( Test );
-        Tree.Remove( Test->Key );
-        Passed = Tree.Head == null;
-        printf("%s\n", Passed ? "passed" : "failed");
+}
+
+bool TEST::Run()
+{
+    printf( "%s", Buffer );
+    for(int i = 0; i < MAX_NODES; i++) {
+        Nodes[i] = new SUPER_NODE();
+        Nodes[i]->Key = i;
     }
+    Passed = false;
+    Passed = RunInternal();
+    printf( "%s\n", Passed ? "Passed" : "Failed" );
+    for(int i = 0; i < MAX_NODES; i++) {
+        delete( Nodes[i] );
+    }
+    return Passed;
+}
+//******************************************************************************
     
+//******************************************************************************
+class TEST_1 : TEST 
+{
+    public: TEST_1() : TEST( "Insert a single element" ) {}
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "3: Insert two elements, remove first" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Test1 = new SUPER_NODE();
-        SUPER_NODE* Test2 = new SUPER_NODE();
-        Test1->Key = 100;
-        Test2->Key = 200;
-        Tree.Insert( Test1 );
-        Tree.Insert( Test2 );
-        Tree.Remove( Test1->Key );
-        Passed =  Tree.Head == Test2;
+        Tree.Insert( Nodes[0] );
+        return Tree.Head == Nodes[0];
+    }
+};
+static TEST_1 Test1;
+//******************************************************************************
+class TEST_2 : TEST
+{
+    public: TEST_2() : TEST( "Remove a single element" ) { }
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[0] );
+        Tree.Remove( Nodes[0]->Key );
+        return Tree.Head == null;
+    }
+};
+static TEST_2 Test2;
+//******************************************************************************
+class TEST_3 : TEST
+{
+    public: TEST_3() : TEST( "Insert two elements, remove first" ) { }
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[0] );
+        Tree.Insert( Nodes[1] );
+        Tree.Remove( Nodes[0]->Key );
+        Passed =  Tree.Head == Nodes[1];
         Passed &= Tree.Head->Left == null;
         Passed &= Tree.Head->Right == null;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-    
+};
+static TEST_3 Test3;
+//******************************************************************************
+class TEST_4 : TEST
+{
+    public: TEST_4() : TEST( "Insert two elements, writing values" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "4: Insert two elements, writing values" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Test1 = new SUPER_NODE();
-        SUPER_NODE* Test2 = new SUPER_NODE();
-        Test1->Key = 10;
-        Test2->Key = 20;
-        Test1->SuperInt = 5000;
-        Test2->SuperInt = 10023;
-        Tree.Insert( Test1 );
-        Tree.Insert( Test2 );
+        Nodes[10]->SuperInt = 5000;
+        Nodes[20]->SuperInt = 10023;
+        Tree.Insert( Nodes[10] );
+        Tree.Insert( Nodes[20] );
         SUPER_NODE* Node1 = Tree.Find( 10 );
         SUPER_NODE* Node2 = Tree.Find( 20 );
         Passed =  Node1->SuperInt == 5000;
         Passed &= Node2->SuperInt == 10023;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_4 Test4;
+//******************************************************************************
+class TEST_5 : TEST
+{
+    public: TEST_5() : TEST( "Tree rotations" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "5: Test all rotation possibilities" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        const uint NUM_NODES = 100;
-        SUPER_NODE* TestNodes[NUM_NODES];
-        for(uint i = 1; i < NUM_NODES; i++) {
-            TestNodes[i] = new SUPER_NODE();
-            TestNodes[i]->Key = i;
-            TestNodes[i]->SuperInt = i;
-        }
-        
         // Test Left-Left rotation
-        Tree.Insert(TestNodes[30]);
-        Tree.Insert(TestNodes[40]);
-        Tree.Insert(TestNodes[50]);
+        Tree.Insert(Nodes[30]);
+        Tree.Insert(Nodes[40]);
+        Tree.Insert(Nodes[50]);
 
         // Test Right-Right rotation
-        Tree.Insert(TestNodes[20]);
-        Tree.Insert(TestNodes[10]);
+        Tree.Insert(Nodes[20]);
+        Tree.Insert(Nodes[10]);
 
         // Test Right-Left rotation
-        Tree.Insert(TestNodes[25]);
+        Tree.Insert(Nodes[25]);
 
         // Test Left-Right rotation
-        Tree.Insert(TestNodes[45]);
-        Tree.Insert(TestNodes[44]);
-        Tree.Insert(TestNodes[42]);
-        Tree.Insert(TestNodes[41]);
+        Tree.Insert(Nodes[45]);
+        Tree.Insert(Nodes[44]);
+        Tree.Insert(Nodes[42]);
+        Tree.Insert(Nodes[41]);
 
         Passed = Tree.Head->Key == 30;
         Passed &= Tree.Head->Left->Key == 20;
@@ -117,70 +157,62 @@ int main()
         Passed &= Tree.Head->Right->Right->Key == 45;
         Passed &= Tree.Head->Right->Right->Left->Key == 44;
         Passed &= Tree.Head->Right->Right->Right->Key == 50;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_5 Test5;
+//******************************************************************************
+class TEST_6 : TEST
+{
+    public: TEST_6() : TEST( "Remove an only child" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "6: Remove an only child" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Node = new SUPER_NODE();
-        Node->Key = 100;
-        Tree.Insert( Node );
-        Passed = Tree.Head == Node; 
-        Tree.Remove( Node );
+        Tree.Insert( Nodes[0] );
+        Passed = Tree.Head == Nodes[0]; 
+        Tree.Remove( Nodes[0] );
         Passed &= Tree.Head == null;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_6 Test6;
+//******************************************************************************
+class TEST_7 : TEST
+{
+    public: TEST_7() : TEST( "Remove an only child to the left" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "7: Remove single child to the left" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Node = new SUPER_NODE();
-        SUPER_NODE* Left = new SUPER_NODE();
-        Node->Key = 100;
-        Left->Key = 50;
-        Tree.Insert( Node );
-        Tree.Insert( Left );
-        Tree.Remove( Left );
-        Passed = Tree.Head == Node;
+        Tree.Insert( Nodes[10] );
+        Tree.Insert( Nodes[5] );
+        Tree.Remove( Nodes[5] );
+        Passed = Tree.Head == Nodes[10];
         Passed &= Tree.Head->Left == null;
         Passed &= Tree.Head->Right == null;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_7 Test7;
+//******************************************************************************
+class TEST_8 : TEST
+{
+    public: TEST_8() : TEST( "Remove an only child to the right" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "8: Remove single child to the right" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        SUPER_NODE* Node = new SUPER_NODE();
-        SUPER_NODE* Right = new SUPER_NODE();
-        Node->Key = 100;
-        Right->Key = 200;
-        Tree.Insert( Node );
-        Tree.Insert( Right );
-        Tree.Remove( Right );
-        Passed = Tree.Head == Node;
+        Tree.Insert( Nodes[10] );
+        Tree.Insert( Nodes[15] );
+        Tree.Remove( Nodes[15] );
+        Passed = Tree.Head == Nodes[10];
         Passed &= Tree.Head->Left == null;
         Passed &= Tree.Head->Right == null;
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_8 Test8;
+//******************************************************************************
+class TEST_9 : TEST
+{
+    public: TEST_9() : TEST( "Remove a child from a right-heavy tree" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "9: Remove children from right-heavy tree" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
-        for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
-        }
         Tree.Insert( Nodes[30] );
         Tree.Insert( Nodes[40] );
         Tree.Insert( Nodes[50] );
@@ -194,24 +226,16 @@ int main()
         Passed &= Tree.Head->Right == Nodes[50];
         Passed &= Tree.Head->Right->Right == null;
         Passed &= Tree.Head->Right->Left == null;
-        
-        for(int i =0 ; i < MAX_NODES; i++) {
-            delete(Nodes[i]);
-        }
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_9 Test9;
+//******************************************************************************
+class TEST_10 : TEST
+{
+    public: TEST_10() : TEST( "Remove a child from a left-heavy tree" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "10: Remove children from a left-heavy tree" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
-        for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
-        }
         Tree.Insert( Nodes[30] );
         Tree.Insert( Nodes[40] );
         Tree.Insert( Nodes[50] );
@@ -225,21 +249,16 @@ int main()
         Passed &= Tree.Head->Right == Nodes[50];
         Passed &= Tree.Head->Left->Left == null;
         Passed &= Tree.Head->Left->Right == null;
-        
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
+};
+static TEST_10 Test10;
+//******************************************************************************
+class TEST_11 : TEST
+{
+    public: TEST_11() : TEST( "Remove a node that has two children on the left" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "11: Remove a node that has two children on left" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
-        for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
-        }
         Tree.Insert( Nodes[30] );
         Tree.Insert( Nodes[40] );
         Tree.Insert( Nodes[50] );
@@ -251,22 +270,16 @@ int main()
         Passed &= Tree.Head->Left == Nodes[25];
         Passed &= Tree.Head->Left->Right == Nodes[35];
         Passed &= Tree.Head->Right == Nodes[50];
-        
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_11 Test11;
+//******************************************************************************
+class TEST_12 : TEST
+{
+    public: TEST_12() : TEST( "Remove a node that has two children on the right" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "12: Remove a node that has two children on right" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
-        for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
-        }
         Tree.Insert( Nodes[30] );
         Tree.Insert( Nodes[40] );
         Tree.Insert( Nodes[50] );
@@ -276,24 +289,53 @@ int main()
         
         Passed =  Tree.Head == Nodes[40];
         Passed &= Tree.Head->Left == Nodes[30];
-        Passed &= Tree.Head->Right == Nodes[55];
-        Passed &= Tree.Head->Right->Left == Nodes[45];
-        
-        printf("%s\n", Passed ? "passed" : "failed");
+        Passed &= Tree.Head->Right == Nodes[45];
+        Passed &= Tree.Head->Right->Right == Nodes[55];
+        return Passed;
     }
-    
+};
+static TEST_12 Test12;
+//******************************************************************************
+class TEST_13 : TEST
+{
+    public: TEST_13() : TEST( "Random test" ) { }
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "13: Remove parent from full tree" );
-        printf( "%s", Buffer );
-        bool Passed = false;
+        Tree.Insert( Nodes[92] );
+        Tree.Insert( Nodes[74] );
+        Tree.Insert( Nodes[4] );
+        Tree.Remove( Nodes[74] );
+        Tree.Insert( Nodes[76] );
+        Tree.Insert( Nodes[32] );
+        Tree.Insert( Nodes[13] );
+        Tree.Insert( Nodes[65] );
         
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
-        for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
-        }
+        Passed =  Tree.Head == Nodes[32];
+        Passed &= Tree.Head->Left == Nodes[13];
+        Passed &= Tree.Head->Left->Left == Nodes[4];
+        Passed &= Tree.Head->Right == Nodes[76];
+        Passed &= Tree.Head->Right->Right == Nodes[92];
+        Passed &= Tree.Head->Right->Left == Nodes[65];
+        
+        Tree.Remove( Nodes[13] );
+        Tree.Insert( Nodes[66] );
+        
+        Passed &= Tree.Head == Nodes[65];
+        Passed &= Tree.Head->Left == Nodes[32];
+        Passed &= Tree.Head->Left->Left == Nodes[4];
+        Passed &= Tree.Head->Right == Nodes[76];
+        Passed &= Tree.Head->Right->Right == Nodes[92];
+        Passed &= Tree.Head->Right->Left == Nodes[66];
+        return Passed;
+    }
+};
+static TEST_13 Test13;
+//******************************************************************************
+class TEST_14 : TEST
+{
+    public: TEST_14() : TEST( "Remove a parent from a full tree" ) { }
+    protected: bool RunInternal()
+    {
         Tree.Insert( Nodes[30] );
         Tree.Insert( Nodes[40] );
         Tree.Insert( Nodes[50] );
@@ -312,22 +354,18 @@ int main()
         Passed &= Tree.Head->Right == Nodes[50];
         Passed &= Tree.Head->Right->Right == Nodes[55];
         Passed &= Tree.Head->Right->Left == Nodes[45];
-        
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Passed;
     }
-
+};
+static TEST_14 Test14;
+//******************************************************************************
+class TEST_15 : TEST
+{
+    public: TEST_15() : TEST( "Add/Remove iterations" ) {}
+    protected: bool RunInternal()
     {
-        snprintf( Buffer, 100, "%-100s", "14: Add / Remove iterations" );
-        printf( "%s", Buffer );
-        bool Passed = false;
-        
         printf("\n");
-        AVL_TREE<SUPER_NODE> Tree;
-        const int MAX_NODES = 100;
-        SUPER_NODE* Nodes[MAX_NODES];
         for(int i = 0; i < MAX_NODES; i++) {
-            Nodes[i] = new SUPER_NODE();
-            Nodes[i]->Key = i;
             Nodes[i]->SuperInt = -1;
         }
 
@@ -335,8 +373,9 @@ int main()
             int index = rand() % MAX_NODES;
             if( Nodes[index]->SuperInt == -1 ) {
                 printf("\tInsert %d\n", index);
-                Tree.Insert( Nodes[index] );
+                //Nodes[index]->Key = index;
                 Nodes[index]->SuperInt = index;
+                Tree.Insert( Nodes[index] );
             } else {
                 printf("\tRemove %d\n", index);
                 Tree.Remove( Nodes[index] );
@@ -350,9 +389,31 @@ int main()
             }
         }
 
-        Passed = Tree.Head == null;
-        
-        printf("%s\n", Passed ? "passed" : "failed");
+        return Tree.Head == null;
     }
+};
+static TEST_15 Test15;
+//******************************************************************************
 
+
+
+
+//******************************************************************************
+int main()
+{
+    int counter = 0;
+    int PassedCounter = 0;
+    srand(time(null));
+
+    printf("Starting Test suite...\n");
+    printf("------------------------------------------------------------\n");
+    TEST* TestIter = Tests;
+    while( TestIter != null ) {
+        printf("%3d: ", ++counter);
+        if(TestIter->Run()) PassedCounter++;
+        TestIter = TestIter->Next;
+    }
+    printf("Finished test suite...\n");
+    printf("%d / %d passed\n", PassedCounter, counter);
 }
+//******************************************************************************
