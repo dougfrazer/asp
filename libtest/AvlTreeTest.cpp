@@ -34,19 +34,18 @@ private:
 };
 
 static TEST* Tests = null;
+static TEST* TestTail = null;
 
 TEST::TEST(const char* Title)
 {
     snprintf( Buffer, 100, "%-60s", Title );
     if( Tests == null ) {
         Tests = this;
-    } else {
-        TEST* Temp = Tests;
-        while( Temp->Next != null ) {
-            Temp = Temp->Next;
-        }
-        Temp->Next = this;
     }
+    if( TestTail != null ) {
+       TestTail->Next = this;
+    }
+    TestTail = this;
 }
 
 bool TEST::Run()
@@ -67,7 +66,7 @@ bool TEST::Run()
 //******************************************************************************
     
 //******************************************************************************
-class TEST_1 : TEST 
+class TEST_1 : public TEST 
 {
     public: TEST_1() : TEST( "Insert a single element" ) {}
     protected: bool RunInternal()
@@ -78,7 +77,7 @@ class TEST_1 : TEST
 };
 static TEST_1 Test1;
 //******************************************************************************
-class TEST_2 : TEST
+class TEST_2 : public TEST
 {
     public: TEST_2() : TEST( "Remove a single element" ) { }
     protected: bool RunInternal()
@@ -90,7 +89,7 @@ class TEST_2 : TEST
 };
 static TEST_2 Test2;
 //******************************************************************************
-class TEST_3 : TEST
+class TEST_3 : public TEST
 {
     public: TEST_3() : TEST( "Insert two elements, remove first" ) { }
     protected: bool RunInternal()
@@ -106,7 +105,7 @@ class TEST_3 : TEST
 };
 static TEST_3 Test3;
 //******************************************************************************
-class TEST_4 : TEST
+class TEST_4 : public TEST
 {
     public: TEST_4() : TEST( "Insert two elements, writing values" ) { }
     protected: bool RunInternal()
@@ -124,7 +123,7 @@ class TEST_4 : TEST
 };
 static TEST_4 Test4;
 //******************************************************************************
-class TEST_5 : TEST
+class TEST_5 : public TEST
 {
     public: TEST_5() : TEST( "Tree rotations" ) { }
     protected: bool RunInternal()
@@ -162,7 +161,7 @@ class TEST_5 : TEST
 };
 static TEST_5 Test5;
 //******************************************************************************
-class TEST_6 : TEST
+class TEST_6 : public TEST
 {
     public: TEST_6() : TEST( "Remove an only child" ) { }
     protected: bool RunInternal()
@@ -176,7 +175,7 @@ class TEST_6 : TEST
 };
 static TEST_6 Test6;
 //******************************************************************************
-class TEST_7 : TEST
+class TEST_7 : public TEST
 {
     public: TEST_7() : TEST( "Remove an only child to the left" ) { }
     protected: bool RunInternal()
@@ -192,7 +191,7 @@ class TEST_7 : TEST
 };
 static TEST_7 Test7;
 //******************************************************************************
-class TEST_8 : TEST
+class TEST_8 : public TEST
 {
     public: TEST_8() : TEST( "Remove an only child to the right" ) { }
     protected: bool RunInternal()
@@ -208,7 +207,7 @@ class TEST_8 : TEST
 };
 static TEST_8 Test8;
 //******************************************************************************
-class TEST_9 : TEST
+class TEST_9 : public TEST
 {
     public: TEST_9() : TEST( "Remove a child from a right-heavy tree" ) { }
     protected: bool RunInternal()
@@ -229,9 +228,9 @@ class TEST_9 : TEST
         return Passed;
     }
 };
-static TEST_9 Test9;
+ static TEST_9 Test9;
 //******************************************************************************
-class TEST_10 : TEST
+class TEST_10 : public TEST
 {
     public: TEST_10() : TEST( "Remove a child from a left-heavy tree" ) { }
     protected: bool RunInternal()
@@ -254,7 +253,7 @@ class TEST_10 : TEST
 };
 static TEST_10 Test10;
 //******************************************************************************
-class TEST_11 : TEST
+class TEST_11 : public TEST
 {
     public: TEST_11() : TEST( "Remove a node that has two children on the left" ) { }
     protected: bool RunInternal()
@@ -275,7 +274,7 @@ class TEST_11 : TEST
 };
 static TEST_11 Test11;
 //******************************************************************************
-class TEST_12 : TEST
+class TEST_12 : public TEST
 {
     public: TEST_12() : TEST( "Remove a node that has two children on the right" ) { }
     protected: bool RunInternal()
@@ -296,7 +295,7 @@ class TEST_12 : TEST
 };
 static TEST_12 Test12;
 //******************************************************************************
-class TEST_13 : TEST
+class TEST_13 : public TEST
 {
     public: TEST_13() : TEST( "Random test" ) { }
     protected: bool RunInternal()
@@ -331,7 +330,7 @@ class TEST_13 : TEST
 };
 static TEST_13 Test13;
 //******************************************************************************
-class TEST_14 : TEST
+class TEST_14 : public TEST
 {
     public: TEST_14() : TEST( "Remove a parent from a full tree" ) { }
     protected: bool RunInternal()
@@ -359,9 +358,199 @@ class TEST_14 : TEST
 };
 static TEST_14 Test14;
 //******************************************************************************
-class TEST_15 : TEST
+class TEST_15 : public TEST
 {
-    public: TEST_15() : TEST( "Add/Remove iterations" ) {}
+    public: TEST_15() : TEST( "Random test 2" ) {}
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[0] );
+        Tree.Insert( Nodes[11] );
+        Tree.Insert( Nodes[76] );
+        Tree.Insert( Nodes[64] );
+        Tree.Insert( Nodes[9] );
+        Tree.Insert( Nodes[39] ); 
+        Tree.Insert( Nodes[72] );
+        Tree.Remove( Nodes[64] );
+
+        Passed = Tree.Head == Nodes[11];
+        Passed &= Tree.Head->Left == Nodes[0];
+        Passed &= Tree.Head->Left->Right == Nodes[9];
+        Passed &= Tree.Head->Right == Nodes[72];
+        Passed &= Tree.Head->Right->Left == Nodes[39];
+        Passed &= Tree.Head->Right->Right == Nodes[76];
+
+        Tree.Remove( Nodes[76] );
+        Tree.Insert( Nodes[34] ); 
+        Tree.Insert( Nodes[49] );
+        Tree.Insert( Nodes[64] );
+       
+        Passed &= Tree.Head == Nodes[11];
+        Passed &= Tree.Head->Left == Nodes[0];
+        Passed &= Tree.Head->Left->Right == Nodes[9];
+        Passed &= Tree.Head->Right == Nodes[39];
+        Passed &= Tree.Head->Right->Left == Nodes[34];
+        Passed &= Tree.Head->Right->Right == Nodes[64];
+        Passed &= Tree.Head->Right->Right->Right == Nodes[72];
+        Passed &= Tree.Head->Right->Right->Left == Nodes[49];  
+        return Passed;
+    }
+};
+static TEST_15 Test15;
+//******************************************************************************
+class TEST_16 : public TEST
+{
+    public: TEST_16() : TEST( "Random test 3" ) {}
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[62] );
+        Tree.Insert( Nodes[36] );
+        Tree.Insert( Nodes[49] );
+        Tree.Insert( Nodes[46] );
+        Tree.Insert( Nodes[10] );
+        Tree.Insert( Nodes[81] );
+        Tree.Insert( Nodes[76] );
+        Tree.Insert( Nodes[74] );
+        Tree.Insert( Nodes[0]  );
+        Tree.Insert( Nodes[30] );
+        Tree.Insert( Nodes[66] );
+        Tree.Insert( Nodes[7]  );
+        Tree.Insert( Nodes[40] );
+        Tree.Insert( Nodes[13] );
+        Tree.Remove( Nodes[10] );
+        return true;
+    }
+};
+static TEST_16 Test16;
+//******************************************************************************
+class TEST_17 : public TEST
+{
+    public: TEST_17() : TEST( "Random test 4" ) {}
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[67] );
+        Tree.Insert( Nodes[52] );
+        Tree.Insert( Nodes[27] );
+        Tree.Insert( Nodes[8]  );
+        Tree.Remove( Nodes[67] );
+        Tree.Insert( Nodes[3]  );
+        Tree.Insert( Nodes[56] );
+        Tree.Insert( Nodes[63] );
+        Tree.Insert( Nodes[59] );
+        Tree.Remove( Nodes[27] );
+        Tree.Insert( Nodes[54] );
+        Tree.Insert( Nodes[43] );
+        Tree.Insert( Nodes[13] );
+        Tree.Insert( Nodes[60] );
+        Tree.Insert( Nodes[82] );
+        Tree.Insert( Nodes[94] );
+        Tree.Insert( Nodes[81] );
+        Tree.Insert( Nodes[65] );
+        Tree.Insert( Nodes[25] );
+        Tree.Insert( Nodes[50] );
+        Tree.Remove( Nodes[52] );
+        return true;    
+    }
+};
+static TEST_17 Test17;    
+//******************************************************************************
+class TEST_18 : public TEST
+{
+    public: TEST_18() : TEST( "Random Test 5" ) {}
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[84] );
+        Tree.Insert( Nodes[86] );
+        Tree.Insert( Nodes[58] );
+        Tree.Insert( Nodes[18] );
+        assert( Tree.Find( 18 ) != null );
+        Tree.Remove( Nodes[84] );
+        assert( Tree.Find( 18 ) != null );
+        Tree.Insert( Nodes[43] );
+        assert( Tree.Find( 18 ) != null );
+        Tree.Insert( Nodes[90] );
+        assert( Tree.Find( 18 ) != null );
+        Tree.Remove( Nodes[18] ); 
+        return true;
+    }
+};
+static TEST_18 Test18;
+class TEST_19 : public TEST
+{
+    public: TEST_19() : TEST( "Random test 6" ) {}
+    protected: bool RunInternal()
+    {
+        Tree.Insert( Nodes[82] );
+        Tree.Insert( Nodes[32] );
+        Tree.Insert( Nodes[20] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[47] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[29] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[80] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[64] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[40] );
+        assert( Tree.Find( 20 ) != null );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[9]  );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[25] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[70] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[61] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[41] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[3]  );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[68] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[62] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[19] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[10] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[35] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[78] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Remove( Nodes[62] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[17] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Remove( Nodes[41] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[49] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[89] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Remove( Nodes[32] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Remove( Nodes[29] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[62] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[2]  );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[87] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[30] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Insert( Nodes[84] );
+        assert( Tree.Find( 20 ) != null );
+        Tree.Remove( Nodes[20] );
+        return true;
+    }
+};
+static TEST_19 Test19;
+//******************************************************************************
+class TEST_RANDOM : public TEST
+{
+    public: TEST_RANDOM() : TEST( "Add/Remove iterations" ) {}
     protected: bool RunInternal()
     {
         printf("\n");
@@ -372,19 +561,21 @@ class TEST_15 : TEST
         for(int i = 1; i < 1000; i++) {
             int index = rand() % MAX_NODES;
             if( Nodes[index]->SuperInt == -1 ) {
-                printf("\tInsert %d\n", index);
+//                printf("\t%d: Insert %d\n", i, index);
                 //Nodes[index]->Key = index;
                 Nodes[index]->SuperInt = index;
                 Tree.Insert( Nodes[index] );
             } else {
-                printf("\tRemove %d\n", index);
+//                printf("\t%d: Remove %d\n", i, index);
                 Tree.Remove( Nodes[index] );
                 Nodes[index]->SuperInt = -1;
             }
         }
 
+//        printf("\tRemoving all the rest...\n");
         for(int i = 0; i < MAX_NODES; i++) {
-            if( Nodes[i]->SuperInt != 0 ) {
+            if( Nodes[i]->SuperInt != -1 ) {
+//                printf("\t...Remove %d\n", i);
                 Tree.Remove( Nodes[i] );
             }
         }
@@ -392,12 +583,13 @@ class TEST_15 : TEST
         return Tree.Head == null;
     }
 };
-static TEST_15 Test15;
+static TEST_RANDOM TestRandom;
 //******************************************************************************
 
 
 
-
+//******************************************************************************
+// Main test loop
 //******************************************************************************
 int main()
 {

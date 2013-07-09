@@ -72,6 +72,8 @@ void AVL_TREE<T>::Insert( T* Node )
     *s = Node;
     (*s)->Height = 1;
     (*s)->Parent = p;
+    (*s)->Left = null;
+    (*s)->Right = null;
     
     Rebalance( p );
 }
@@ -138,21 +140,26 @@ void AVL_TREE<T>::Remove( u64 Key )
         while( SwapNode->Right != null ) {
             SwapNode = SwapNode->Right;
         }
-        if( SwapNode->Left != null ) {
-            SwapNode->Parent->Right = SwapNode->Left;
-            SwapNode->Left->Parent = SwapNode->Parent;
-            RebalanceNode = SwapNode->Left;
+        if( Node->Left == SwapNode ) {
+            RebalanceNode = SwapNode;
         } else {
-            if( SwapNode->Parent != Node ) {
+            if( SwapNode->Left != null ) {
+                SwapNode->Parent->Right = SwapNode->Left;
+                SwapNode->Left->Parent = SwapNode->Parent;
+                RebalanceNode = SwapNode->Left;
+            } else {
                 SwapNode->Parent->Right = null;
+                RebalanceNode = SwapNode->Parent;
             }
-            RebalanceNode = SwapNode->Parent;
+            SwapNode->Left = Node->Left;
         }
-        SwapNode->Left = SwapNode == Node->Left ? null : Node->Left;
         SwapNode->Right = Node->Right;
         SwapNode->Parent = Node->Parent;
         if( Node->Right != null ) {
             Node->Right->Parent = SwapNode;
+        }
+        if( Node->Left != null && Node->Left != SwapNode ) {
+            Node->Left->Parent = SwapNode;
         }
         UpdateParent( Node, SwapNode );
     }
