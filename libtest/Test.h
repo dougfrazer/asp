@@ -5,6 +5,8 @@
 #ifndef __TEST_H__
 #define __TEST_H__
 
+#define null 0
+
 class TEST
 {
 public:
