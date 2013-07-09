@@ -36,9 +36,9 @@ void Memcpy(void* dest, const void* src, size_t size)
     char* Dest;
     char* Src;
     char* DestEnd;
-    unsigned long int* Dest2;
-    unsigned long int* Src2;
-    unsigned long int* DestEnd2;
+    u64* Dest2;
+    u64* Src2;
+    u64* DestEnd2;
 
     // Copy over bytes until we are 8-byte aligned
     Dest = (char*)dest;

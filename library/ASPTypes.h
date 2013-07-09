@@ -2,6 +2,7 @@
 #define __ASP_TYPES_H__
 
 #include "stdint.h"
+#include "stddef.h"
 
 typedef unsigned long int uint64;
 typedef unsigned int uint;
@@ -9,7 +10,6 @@ typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
-typedef long unsigned int size_t;
 typedef struct { float x; float y; float z; float w; } vector4;
 inline void pointer_make_relative(void** x) { *x = (void*)((intptr_t)*x - (intptr_t)x); }
 inline void pointer_make_absolute(void** x) { *x = (void*)((intptr_t)*x + (intptr_t)x); }
