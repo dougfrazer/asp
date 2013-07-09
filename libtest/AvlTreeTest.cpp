@@ -1,4 +1,5 @@
 #include "AvlTree.h"
+#include "Test.h"
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -10,65 +11,42 @@ struct SUPER_NODE : public AVL_TREE<SUPER_NODE>::NODE {
 
 
 //******************************************************************************
-class TEST
+class AVL_TREE_TEST : public TEST
 {
 public:
-    TEST(const char* Title);
-    virtual ~TEST() {};
-
-public:
-    bool Run();
-    TEST* Next;
+    AVL_TREE_TEST(const char* Title) : TEST(Title) {}
+    virtual ~AVL_TREE_TEST() {};
 
 protected:
     virtual bool RunInternal() = 0;
+    virtual void Setup();
+    virtual void Cleanup();
 
-    // Data
-    bool Passed;
     AVL_TREE<SUPER_NODE> Tree;
     static const int MAX_NODES = 100;
     SUPER_NODE* Nodes[MAX_NODES];
-
-private:
-    char Buffer[100];
 };
-
-static TEST* Tests = null;
-static TEST* TestTail = null;
-
-TEST::TEST(const char* Title)
+//******************************************************************************
+void AVL_TREE_TEST::Setup()
 {
-    snprintf( Buffer, 100, "%-60s", Title );
-    if( Tests == null ) {
-        Tests = this;
-    }
-    if( TestTail != null ) {
-       TestTail->Next = this;
-    }
-    TestTail = this;
-}
-
-bool TEST::Run()
-{
-    printf( "%s", Buffer );
     for(int i = 0; i < MAX_NODES; i++) {
         Nodes[i] = new SUPER_NODE();
         Nodes[i]->Key = i;
     }
-    Passed = false;
-    Passed = RunInternal();
-    printf( "%s\n", Passed ? "Passed" : "Failed" );
+}
+//******************************************************************************
+void AVL_TREE_TEST::Cleanup()
+{
     for(int i = 0; i < MAX_NODES; i++) {
         delete( Nodes[i] );
     }
-    return Passed;
 }
 //******************************************************************************
     
 //******************************************************************************
-class TEST_1 : public TEST 
+class TEST_1 : public AVL_TREE_TEST 
 {
-    public: TEST_1() : TEST( "Insert a single element" ) {}
+    public: TEST_1() : AVL_TREE_TEST( "Insert a single element" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[0] );
@@ -77,9 +55,9 @@ class TEST_1 : public TEST
 };
 static TEST_1 Test1;
 //******************************************************************************
-class TEST_2 : public TEST
+class TEST_2 : public AVL_TREE_TEST
 {
-    public: TEST_2() : TEST( "Remove a single element" ) { }
+    public: TEST_2() : AVL_TREE_TEST( "Remove a single element" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[0] );
@@ -89,9 +67,9 @@ class TEST_2 : public TEST
 };
 static TEST_2 Test2;
 //******************************************************************************
-class TEST_3 : public TEST
+class TEST_3 : public AVL_TREE_TEST
 {
-    public: TEST_3() : TEST( "Insert two elements, remove first" ) { }
+    public: TEST_3() : AVL_TREE_TEST( "Insert two elements, remove first" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[0] );
@@ -105,9 +83,9 @@ class TEST_3 : public TEST
 };
 static TEST_3 Test3;
 //******************************************************************************
-class TEST_4 : public TEST
+class TEST_4 : public AVL_TREE_TEST
 {
-    public: TEST_4() : TEST( "Insert two elements, writing values" ) { }
+    public: TEST_4() : AVL_TREE_TEST( "Insert two elements, writing values" ) { }
     protected: bool RunInternal()
     {
         Nodes[10]->SuperInt = 5000;
@@ -123,9 +101,9 @@ class TEST_4 : public TEST
 };
 static TEST_4 Test4;
 //******************************************************************************
-class TEST_5 : public TEST
+class TEST_5 : public AVL_TREE_TEST
 {
-    public: TEST_5() : TEST( "Tree rotations" ) { }
+    public: TEST_5() : AVL_TREE_TEST( "Tree rotations" ) { }
     protected: bool RunInternal()
     {
         // Test Left-Left rotation
@@ -161,9 +139,9 @@ class TEST_5 : public TEST
 };
 static TEST_5 Test5;
 //******************************************************************************
-class TEST_6 : public TEST
+class TEST_6 : public AVL_TREE_TEST
 {
-    public: TEST_6() : TEST( "Remove an only child" ) { }
+    public: TEST_6() : AVL_TREE_TEST( "Remove an only child" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[0] );
@@ -175,9 +153,9 @@ class TEST_6 : public TEST
 };
 static TEST_6 Test6;
 //******************************************************************************
-class TEST_7 : public TEST
+class TEST_7 : public AVL_TREE_TEST
 {
-    public: TEST_7() : TEST( "Remove an only child to the left" ) { }
+    public: TEST_7() : AVL_TREE_TEST( "Remove an only child to the left" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[10] );
@@ -191,9 +169,9 @@ class TEST_7 : public TEST
 };
 static TEST_7 Test7;
 //******************************************************************************
-class TEST_8 : public TEST
+class TEST_8 : public AVL_TREE_TEST
 {
-    public: TEST_8() : TEST( "Remove an only child to the right" ) { }
+    public: TEST_8() : AVL_TREE_TEST( "Remove an only child to the right" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[10] );
@@ -207,9 +185,9 @@ class TEST_8 : public TEST
 };
 static TEST_8 Test8;
 //******************************************************************************
-class TEST_9 : public TEST
+class TEST_9 : public AVL_TREE_TEST
 {
-    public: TEST_9() : TEST( "Remove a child from a right-heavy tree" ) { }
+    public: TEST_9() : AVL_TREE_TEST( "Remove a child from a right-heavy tree" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[30] );
@@ -230,9 +208,9 @@ class TEST_9 : public TEST
 };
  static TEST_9 Test9;
 //******************************************************************************
-class TEST_10 : public TEST
+class TEST_10 : public AVL_TREE_TEST
 {
-    public: TEST_10() : TEST( "Remove a child from a left-heavy tree" ) { }
+    public: TEST_10() : AVL_TREE_TEST( "Remove a child from a left-heavy tree" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[30] );
@@ -253,9 +231,9 @@ class TEST_10 : public TEST
 };
 static TEST_10 Test10;
 //******************************************************************************
-class TEST_11 : public TEST
+class TEST_11 : public AVL_TREE_TEST
 {
-    public: TEST_11() : TEST( "Remove a node that has two children on the left" ) { }
+    public: TEST_11() : AVL_TREE_TEST( "Remove a node that has two children on the left" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[30] );
@@ -274,9 +252,9 @@ class TEST_11 : public TEST
 };
 static TEST_11 Test11;
 //******************************************************************************
-class TEST_12 : public TEST
+class TEST_12 : public AVL_TREE_TEST
 {
-    public: TEST_12() : TEST( "Remove a node that has two children on the right" ) { }
+    public: TEST_12() : AVL_TREE_TEST( "Remove a node that has two children on the right" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[30] );
@@ -295,9 +273,9 @@ class TEST_12 : public TEST
 };
 static TEST_12 Test12;
 //******************************************************************************
-class TEST_13 : public TEST
+class TEST_13 : public AVL_TREE_TEST
 {
-    public: TEST_13() : TEST( "Random test" ) { }
+    public: TEST_13() : AVL_TREE_TEST( "Random test" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[92] );
@@ -330,9 +308,9 @@ class TEST_13 : public TEST
 };
 static TEST_13 Test13;
 //******************************************************************************
-class TEST_14 : public TEST
+class TEST_14 : public AVL_TREE_TEST
 {
-    public: TEST_14() : TEST( "Remove a parent from a full tree" ) { }
+    public: TEST_14() : AVL_TREE_TEST( "Remove a parent from a full tree" ) { }
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[30] );
@@ -358,9 +336,9 @@ class TEST_14 : public TEST
 };
 static TEST_14 Test14;
 //******************************************************************************
-class TEST_15 : public TEST
+class TEST_15 : public AVL_TREE_TEST
 {
-    public: TEST_15() : TEST( "Random test 2" ) {}
+    public: TEST_15() : AVL_TREE_TEST( "Random test 2" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[0] );
@@ -397,9 +375,9 @@ class TEST_15 : public TEST
 };
 static TEST_15 Test15;
 //******************************************************************************
-class TEST_16 : public TEST
+class TEST_16 : public AVL_TREE_TEST
 {
-    public: TEST_16() : TEST( "Random test 3" ) {}
+    public: TEST_16() : AVL_TREE_TEST( "Random test 3" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[62] );
@@ -422,9 +400,9 @@ class TEST_16 : public TEST
 };
 static TEST_16 Test16;
 //******************************************************************************
-class TEST_17 : public TEST
+class TEST_17 : public AVL_TREE_TEST
 {
-    public: TEST_17() : TEST( "Random test 4" ) {}
+    public: TEST_17() : AVL_TREE_TEST( "Random test 4" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[67] );
@@ -453,9 +431,9 @@ class TEST_17 : public TEST
 };
 static TEST_17 Test17;    
 //******************************************************************************
-class TEST_18 : public TEST
+class TEST_18 : public AVL_TREE_TEST
 {
-    public: TEST_18() : TEST( "Random Test 5" ) {}
+    public: TEST_18() : AVL_TREE_TEST( "Random Test 5" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[84] );
@@ -474,9 +452,9 @@ class TEST_18 : public TEST
     }
 };
 static TEST_18 Test18;
-class TEST_19 : public TEST
+class TEST_19 : public AVL_TREE_TEST
 {
-    public: TEST_19() : TEST( "Random test 6" ) {}
+    public: TEST_19() : AVL_TREE_TEST( "Random test 6" ) {}
     protected: bool RunInternal()
     {
         Tree.Insert( Nodes[82] );
@@ -548,9 +526,9 @@ class TEST_19 : public TEST
 };
 static TEST_19 Test19;
 //******************************************************************************
-class TEST_RANDOM : public TEST
+class TEST_RANDOM : public AVL_TREE_TEST
 {
-    public: TEST_RANDOM() : TEST( "Add/Remove iterations" ) {}
+    public: TEST_RANDOM() : AVL_TREE_TEST( "Add/Remove iterations" ) {}
     protected: bool RunInternal()
     {
         printf("\n");
@@ -599,11 +577,11 @@ int main()
 
     printf("Starting Test suite...\n");
     printf("------------------------------------------------------------\n");
-    TEST* TestIter = Tests;
+    TEST* TestIter = TEST::GetFirst();
     while( TestIter != null ) {
         printf("%3d: ", ++counter);
         if(TestIter->Run()) PassedCounter++;
-        TestIter = TestIter->Next;
+        TestIter = TEST::GetNext( TestIter );
     }
     printf("Finished test suite...\n");
     printf("%d / %d passed\n", PassedCounter, counter);
