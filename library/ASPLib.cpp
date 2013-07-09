@@ -95,7 +95,7 @@ void* Malloc( size_t size )
         return null;
     }
     
-    assert( sizeof(ALLOCATION) == 56 );
+    assert( sizeof(ALLOCATION) < 64 );
     ALLOCATION* NewAllocation = (ALLOCATION*)Pool_64.GetBlock();
 
     if( size <= 8 ) {
@@ -114,6 +114,7 @@ void* Malloc( size_t size )
         NewAllocation->ptr = malloc( size );
     }
 
+    NewAllocation->size = size;
     NewAllocation->Key = (u64)( NewAllocation->ptr );
     Allocations.Insert( NewAllocation );
     return NewAllocation->ptr;
