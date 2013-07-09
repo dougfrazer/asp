@@ -86,7 +86,7 @@ class TEST_RANDOM : public LIST_TEST
             Nodes[i]->value = -1;
         }
 
-        for(int i = 1; i < 1000; i++) {
+        for(int i = 1; i < 100000; i++) {
             int index = rand() % MAX_NODES;
             if( Nodes[index]->value == -1 ) {
                 Nodes[index]->value = index;
