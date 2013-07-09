@@ -143,7 +143,7 @@ static void FreeInternal( size_t size, void* ptr )
 //*****************************************************************************
 void Free( void* ptr )
 {
-    ALLOCATION* Alloc = (ALLOCATION*)Allocations.Find( (u64)ptr );
+    ALLOCATION* Alloc = Allocations.Find( (u64)ptr );
     assert( Alloc != null );
     assert( Alloc->size > 0 );
 
