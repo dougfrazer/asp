@@ -1,3 +1,20 @@
+//******************************************************************************
+// List
+// ----
+//   An in-place templatized list class.
+//   
+//   Usage:
+//      struct X : LIST<X>::NODE {
+//         // add all your data here
+//      }
+//
+//      X* Value = GetInterestingValue();
+//      LIST<X> List;
+//      List.Add(Value);
+//
+// @author Doug Frazer
+// July 2013
+//******************************************************************************
 
 #ifndef __LIST_H__
 #define __LIST_H__
@@ -23,18 +40,20 @@ public:
     T*   GetFirst ( void );
     T*   GetNext  ( T* Node );
 
-public:
+private:
     T* Head;
 };
 
 
+//******************************************************************************
 // Constructor
+//******************************************************************************
 template < class T > LIST<T>::LIST()  { Head = null; }
 template < class T > LIST<T>::~LIST() { }
-template < class T > T* LIST<T>::GetFirst() { return Head; }
-template < class T > T* LIST<T>::GetNext( T* Node ) { return Node->Next == Head ? null : Node->Next; }
 
+//******************************************************************************
 // Public interface
+//******************************************************************************
 template < class T >
 bool LIST<T>::Add( T* Node )
 {
@@ -74,4 +93,15 @@ bool LIST<T>::Remove( T* Node )
     Iter->Next = null;
     return true;
 }
+//******************************************************************************
+template < class T > T* LIST<T>::GetFirst()
+{
+    return Head;
+}
+//******************************************************************************
+template < class T > T* LIST<T>::GetNext( T* Node )
+{ 
+    return Node->Next == Head ? null : Node->Next;
+}
+//******************************************************************************
 #endif

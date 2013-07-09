@@ -1,3 +1,20 @@
+//******************************************************************************
+// Avl Tree
+// --------
+//   An in-place templatized AVL tree (self-balancing binary search tree).
+// 
+//   Usage:
+//     struct X : AVL_TREE<X>::NODE {
+//        // arbitrary data here
+//     }
+//
+//     X* Value = GetInterestingValue();
+//     AVL_TREE<X> Tree;
+//     Tree.Insert(X);
+//
+// @author Doug Frazer
+// June 2013
+//******************************************************************************
 
 #ifndef __AVL_TREE_H__
 #define __AVL_TREE_H__
