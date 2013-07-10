@@ -19,7 +19,7 @@
 //******************************************************************************
 static u32 PrimaryPlayerUserId = 0;
 static PLAYER* PrimaryPlayer = null;
-static PLAYER* PlayerList = null;
+static LIST<PLAYER> PlayerList;
 
 //******************************************************************************
 // Constructor
@@ -28,18 +28,9 @@ PLAYER::PLAYER(u32 _Id) :
     Id(_Id),
     Data(null)
 {
-    // add it to a cyclic list
-    if(PlayerList == null) {
-        PlayerList       = this;
-        PlayerList->Prev = this;
-        PlayerList->Next = this;
-    } else {
-        this->Prev = PlayerList->Prev;
-        this->Next = PlayerList->Prev->Next;
-        PlayerList->Prev->Next = this;
-        PlayerList->Prev = this;
-    }
-    
+    PlayerList.Add( this ); 
+    DataName = "/home/doug/asp/aspclient/data/stick_figure.data";
+/*    
     char* data_path;
     data_path = getenv ("ASPCLIENT_DATA");
     if (!data_path) {
@@ -47,14 +38,14 @@ PLAYER::PLAYER(u32 _Id) :
     } else {
         DataName = strdup(data_path);
     }
-      
+   */   
       
 
 }
 //******************************************************************************
 PLAYER::~PLAYER()
 {
-    // TODO: remove from PlayerList
+    PlayerList.Remove( this );
     if (DataName) {
         free(DataName);
     }
@@ -133,8 +124,7 @@ static PLAYER* Player_AddUser(u32 UserId)
 {
     PLAYER* Player = new PLAYER(UserId);
     assert(Player != null);
-    Player->Next = PlayerList;
-    PlayerList = Player;
+    PlayerList.Add( Player ); 
     return Player;
 }
 //******************************************************************************
@@ -181,11 +171,11 @@ void Player_SetPosition(float x, float y, float z, u32 UserId)
 //******************************************************************************
 PLAYER* Player_GetFirst()
 {
-    return PlayerList;
+    return PlayerList.GetFirst();
 }
 //******************************************************************************
 PLAYER* Player_GetNext(PLAYER* Player)
 {
-    return Player->Next == PlayerList ? null : Player->Next;
+    return PlayerList.GetNext( Player );
 }
 //******************************************************************************

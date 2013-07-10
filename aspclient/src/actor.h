@@ -14,6 +14,7 @@
 
 #include "ai_public.h"
 #include "library/ASPLib.h"
+#include "library/List.h"
 
 class ANIMATION;
 class PHYSICS;
@@ -22,7 +23,7 @@ class ACTOR
 {
 public:
     ACTOR();
-    virtual ~ACTOR() {};
+    virtual ~ACTOR();
 
 public:
     virtual void Update(float DeltaTime) = 0;

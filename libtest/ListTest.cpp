@@ -77,6 +77,38 @@ class TEST_2 : public LIST_TEST
 };
 static TEST_2 Test2;
 //******************************************************************************
+class TEST_3 : public LIST_TEST
+{
+    struct MANAGER_NODE : public LIST<MANAGER_NODE>::NODE {
+
+    };
+
+    struct CLIENT_NODE : public LIST<CLIENT_NODE>::NODE {
+
+    };
+
+    struct DATA {
+        MANAGER_NODE ManagerNode;
+        CLIENT_NODE  ClientNode;
+    };
+
+    public: TEST_3() : LIST_TEST( "Element in multiple lists" ) {}
+    protected: bool RunInternal()
+    {
+        
+        DATA Value;
+
+        LIST<MANAGER_NODE> List1;
+        LIST<CLIENT_NODE> List2;
+        
+        List1.Add( &Value.ManagerNode );
+        List2.Add( &Value.ClientNode );
+        
+        return true;
+    }
+};
+static TEST_3 Test3;
+//******************************************************************************
 class TEST_RANDOM : public LIST_TEST
 {
     public: TEST_RANDOM() : LIST_TEST( "Random add/remove" ) {}
@@ -102,8 +134,7 @@ class TEST_RANDOM : public LIST_TEST
                 List.Remove( Nodes[i] );
             }
         }
-
-        return List.Head == null;
+        return List.GetFirst() == null;
     }
 };
 static TEST_RANDOM TestRandom;

@@ -11,25 +11,19 @@
 
 #include "GL/glut.h"
 
-static ACTOR* ActorList = null;
+static LIST<ACTOR> ActorList;
 
 //******************************************************************************
 ACTOR::ACTOR()
 {
-    // add it to a cyclic list
-    if(ActorList == null) {
-        ActorList       = this;
-        ActorList->Prev = this;
-        ActorList->Next = this;
-    } else {
-        this->Prev = ActorList->Prev;
-        this->Next = ActorList->Prev->Next;
-        ActorList->Prev->Next = this;
-        ActorList->Prev = this;
-    }
-
+    ActorList.Add( this );
     Animation = null;
     Physics = null;
+}
+//******************************************************************************
+ACTOR::~ACTOR()
+{
+    ActorList.Remove( this );
 }
 //******************************************************************************
 void Actor_Update(float DeltaTime)
@@ -56,11 +50,11 @@ void Actor_Draw()
 //******************************************************************************
 ACTOR* Actor_GetFirst()
 {
-    return ActorList;
+    return ActorList.GetFirst();
 }
 //******************************************************************************
 ACTOR* Actor_GetNext(ACTOR* Actor)
 {
-    return Actor->Next == ActorList ? null : Actor->Next;
+    return ActorList.GetNext( Actor );
 }
 //******************************************************************************

@@ -73,24 +73,20 @@ bool LIST<T>::Add( T* Node )
 template < class T >
 bool LIST<T>::Remove( T* Node )
 {
-    T* Iter = GetFirst();
-    while( Iter != Node && Iter != null ) {
-        Iter = GetNext( Iter );
-    }
-    if( Iter == null ) {
+    if( Node == null ) {
         return false;
     }
-    if( Iter == Head ) {
-        Head = GetNext( Iter );
+    if( Node == Head ) {
+        Head = GetNext( Node );
     }
-    if( Iter->Prev != Iter ) {
-        Iter->Prev->Next = Iter->Next;
+    if( Node->Prev != Node ) {
+        Node->Prev->Next = Node->Next;
     } 
-    if( Iter->Next != Iter ) {
-        Iter->Next->Prev = Iter->Prev;
+    if( Node->Next != Node ) {
+        Node->Next->Prev = Node->Prev;
     }
-    Iter->Prev = null;
-    Iter->Next = null;
+    Node->Prev = null;
+    Node->Next = null;
     return true;
 }
 //******************************************************************************
