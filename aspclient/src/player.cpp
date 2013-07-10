@@ -29,16 +29,15 @@ PLAYER::PLAYER(u32 _Id) :
     Data(null)
 {
     PlayerList.Add( this ); 
-    DataName = "/home/doug/asp/aspclient/data/stick_figure.data";
-/*    
+
     char* data_path;
-    data_path = getenv ("ASPCLIENT_DATA");
+    data_path = getenv ("ASPCLIENT");
     if (!data_path) {
-        DataName = strdup("data/stick_figure.data");
+        printf("You need to set the ASPCLIENT environment variable, assuming you are running from the main asp directory...\n");
+        snprintf(DataName, 100, "aspclient/data/stick_figure.data");
     } else {
-        DataName = strdup(data_path);
+        snprintf(DataName, 100, "%s/data/stick_figure.data", data_path);
     }
-   */   
       
 
 }
@@ -46,9 +45,6 @@ PLAYER::PLAYER(u32 _Id) :
 PLAYER::~PLAYER()
 {
     PlayerList.Remove( this );
-    if (DataName) {
-        free(DataName);
-    }
 }
 //******************************************************************************
 

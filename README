@@ -3,3 +3,8 @@ to build:
 ./autogen.sh
 ./configure
 make
+
+To run:
+start a server on your local machine:    aspserver
+set the aspclient environment variable:  export ASPCLIENT=`pwd`/aspclient/
+run the client:                          aspclient
