@@ -4,6 +4,9 @@
 //   An in-place templatized AVL tree (self-balancing binary search tree).
 // 
 //   Usage:
+//     1.) Extend the AVL Node structure and include interesting contents
+//         that you want to be treeified.
+//
 //     struct X : AVL_TREE<X>::NODE {
 //        // arbitrary data here
 //     }
@@ -11,6 +14,24 @@
 //     X* Value = GetInterestingValue();
 //     AVL_TREE<X> Tree;
 //     Tree.Insert(X);
+//
+//   Alternative Usage:
+//     2.) Include the contents of the AVL Node structure in your class
+//         and create a tree of that class type.
+//
+//     class X {
+//        ...Functions...
+//        ...Data...
+//
+//        X* Parent;
+//        X* Left;
+//        X* Right;
+//        int Height;
+//        u64 Key;
+//     }
+//
+//     AVL_TREE<X> Tree;
+//     Tree.Insert(X;)
 //
 // @author Doug Frazer
 // June 2013
